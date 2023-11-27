@@ -32,7 +32,7 @@ builder.Services.AddIdentity<UserApp, IdentityRole>(Opt =>
     Opt.User.RequireUniqueEmail = true;
     Opt.Password.RequireNonAlphanumeric = false;
     Opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(2);
-    Opt.Lockout.MaxFailedAccessAttempts = 5;
+    Opt.Lockout.MaxFailedAccessAttempts = 4;
     Opt.Lockout.AllowedForNewUsers = true;
 }).AddEntityFrameworkStores<TMMealDbContext>().AddDefaultTokenProviders();
 

@@ -45,8 +45,9 @@ public class CreateRestourantOwnerRequestValidator : AbstractValidator<CreateRes
 
         RuleFor(x => x.PassportOrTaxNumber)
             .NotEmpty().WithMessage("Pasaport numarası boş bırakılamaz.")
-            .Length(10).WithMessage("Pasaport numarası 10 karakter olmak zorundadır.")
-            .Matches(@"^\d+$").WithMessage("Pasaport numarası sadece sayı içerebilir.");
+            .Length(7,15).WithMessage("Pasaport numarası 10 karakter olmak zorundadır.");
+
+        //todo : pasaport numarasi uzunlugu tekrardan kontrol edilip yazilacak (length)
 
 
     }
