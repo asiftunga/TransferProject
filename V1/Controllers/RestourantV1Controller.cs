@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.Web.Http;
 using MiniApp1Api.Configuration;
@@ -98,5 +101,75 @@ public class RestourantV1Controller : ControllerBase
         };
 
         return Created(new Uri(response.Id, UriKind.Relative), response);
+    }
+
+    [HttpPatch]
+    [Authorize]
+    public async Task<IActionResult> PatchRestourants([FromForm] PatchRestourantWithFilesRequests request)
+    {
+        Claim? userIdClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim.Value is null)
+        {
+            return Unauthorized();
+        }
+
+        Restourant? restourant = await _tmMealDbContext.Restourants
+            .FirstOrDefaultAsync(x => x.UserId == userIdClaim.Value);
+
+        if (restourant is null)
+        {
+            return BadRequest();
+        }
+
+        // Gelen verileri doğrudan Restourant nesnesine atayın
+        restourant.MondayOpening = request.PatchData.MondayOpening?.ToTimeSpan();
+        restourant.MondayClosing = request.PatchData.MondayClosing?.ToTimeSpan();
+        restourant.TuesdayOpening = request.PatchData.TuesdayOpening?.ToTimeSpan();
+        restourant.TuesdayClosing = request.PatchData.TuesdayClosing?.ToTimeSpan();
+        restourant.WednesdayOpening = request.PatchData.WednesdayOpening?.ToTimeSpan();
+        restourant.WednesdayClosing = request.PatchData.WednesdayClosing?.ToTimeSpan();
+        restourant.ThursdayOpening = request.PatchData.ThursdayOpening?.ToTimeSpan();
+        restourant.ThursdayClosing = request.PatchData.ThursdayClosing?.ToTimeSpan();
+        restourant.FridayOpening = request.PatchData.FridayOpening?.ToTimeSpan();
+        restourant.FridayClosing = request.PatchData.FridayClosing?.ToTimeSpan();
+        restourant.SaturdayOpening = request.PatchData.SaturdayOpening?.ToTimeSpan();
+        restourant.SaturdayClosing = request.PatchData.SaturdayClosing?.ToTimeSpan();
+        restourant.SundayOpening = request.PatchData.SundayOpening?.ToTimeSpan();
+        restourant.SundayClosing = request.PatchData.SundayClosing?.ToTimeSpan();
+        restourant.ClosedDays = (int)request.PatchData.OpeningDaysBitMask;
+
+        // Dosyaları işleme
+        if (request.Files.Any())
+        {
+            string restaurantDirectory = Path.Combine("Restaurants", restourant.Id.ToString(), userIdClaim.Value);
+
+            if (!Directory.Exists(restaurantDirectory))
+            {
+                Directory.CreateDirectory(restaurantDirectory);
+            }
+
+            foreach (var file in request.Files)
+            {
+                if (file.Length > 0)
+                {
+                    string filePath = Path.Combine(restaurantDirectory, file.FileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                }
+            }
+
+            // Dosya yolu veya klasör yolu kaydetme
+            string pathToSave = request.Files.Count == 1
+                ? Path.Combine(restaurantDirectory, request.Files.First().FileName)
+                : restaurantDirectory;
+
+             restourant.Url = pathToSave; // URL alanını güncelle
+        }
+
+        await _tmMealDbContext.SaveChangesAsync();
+        return NoContent();
     }
 }

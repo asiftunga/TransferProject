@@ -1,5 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.Web.Http;
 using MiniApp1Api.Configuration;
@@ -80,4 +84,5 @@ public class UserV1Controller : ControllerBase
 
         return Created(new Uri(response.Id, UriKind.Relative), response);
     }
+
 }
