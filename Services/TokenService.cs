@@ -2,10 +2,13 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using MiniApp1Api.Configuration;
+using MiniApp1Api.Data;
 using MiniApp1Api.Data.Entities;
+using MiniApp1Api.Data.Enums;
 using MiniApp1Api.Services.Models;
 
 namespace MiniApp1Api.Services;
@@ -14,12 +17,16 @@ public class TokenService : ITokenService
 {
     private readonly UserManager<UserApp> _userManager;
     private readonly CustomTokenOption _customTokenOptions;
+    private readonly TMMealDbContext _tmMealDbContext;
 
-    public TokenService(UserManager<UserApp> userManager,
-        IOptions<CustomTokenOption> customTokenOptions)
+    public TokenService(
+        UserManager<UserApp> userManager,
+        IOptions<CustomTokenOption> customTokenOptions,
+        TMMealDbContext tmMealDbContext)
     {
         _userManager = userManager;
         _customTokenOptions = customTokenOptions.Value;
+        _tmMealDbContext = tmMealDbContext;
     }
 
     public async Task<TokenModel> CreateToken(UserApp userApp)
@@ -108,6 +115,21 @@ public class TokenService : ITokenService
         // Kullanıcının rollerini al ve claim listesine ekle
         var userRoles = await _userManager.GetRolesAsync(userApp);
         userList.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
+
+        if (userRoles.Contains(UserTypes.RestourantOwner.ToString()))
+        {
+            // UserApp ile ilişkili restoranın durumunu sorgula
+            RestourantStatus restaurantStatus = await _tmMealDbContext.Restourants
+                .Where(r => r.UserId == userApp.Id)
+                .Select(r => r.Status)
+                .FirstOrDefaultAsync();
+
+            // Eğer restoran bulunduysa ve durum bilgisi varsa, claim listesine ekle
+            if (!string.IsNullOrEmpty(restaurantStatus.ToString()))
+            {
+                userList.Add(new Claim("restaurantStatus", restaurantStatus.ToString()));
+            }
+        }
 
         return userList;
     }
