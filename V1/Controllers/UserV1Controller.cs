@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.Web.Http;
+using MiniApp1Api.BackgroundServices;
 using MiniApp1Api.Configuration;
 using MiniApp1Api.Data;
 using MiniApp1Api.Data.Entities;
@@ -26,17 +27,20 @@ public class UserV1Controller : ControllerBase
     private readonly List<Client> _clients;
     private readonly ITokenService _tokenService;
     private readonly TMMealDbContext _tmMealDbContext;
+    private readonly EmailSenderBackgroundService _emailSenderService;
 
     public UserV1Controller(
         IOptions<List<Client>> optionsClient,
         UserManager<UserApp> userManager,
         ITokenService tokenService,
-        TMMealDbContext tmMealDbContext)
+        TMMealDbContext tmMealDbContext,
+        EmailSenderBackgroundService emailSenderService)
     {
         _clients = optionsClient.Value;
         _tmMealDbContext = tmMealDbContext;
         _userManager = userManager;
         _tokenService = tokenService;
+        _emailSenderService = emailSenderService;
     }
 
     [HttpPost("")]
@@ -83,6 +87,45 @@ public class UserV1Controller : ControllerBase
         };
 
         return Created(new Uri(response.Id, UriKind.Relative), response);
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(string email)
+    {
+        var user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null)
+        {
+            return BadRequest("User not found.");
+        }
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+
+        // Background service kullanarak kuyruğa e-posta bilgilerini ekle
+        _emailSenderService.QueueEmail(user.Email, token);
+
+        return Ok("Password reset token sent.");
+    }
+
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
+    {
+        var user = await _userManager.FindByEmailAsync(model.Email);
+
+        if (user == null)
+        {
+            return BadRequest("User not found.");
+        }
+
+        var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+
+        if (result.Succeeded)
+        {
+            return Ok("Password has been reset.");
+        }
+
+        // Hata durumunda, hataları döndür
+        return BadRequest(result.Errors);
     }
 
 }

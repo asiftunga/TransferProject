@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using MiniApp1Api.BackgroundServices;
+using MiniApp1Api.BackgroundServices.Models;
 using MiniApp1Api.Configuration;
 using MiniApp1Api.Data;
 using MiniApp1Api.Data.Entities;
@@ -60,6 +61,8 @@ builder.Services.AddDbContext<TMMealDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSqlConnection"));
 });
+
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 builder.Services.AddSingleton<EmailSenderBackgroundService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<EmailSenderBackgroundService>());
