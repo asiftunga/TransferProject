@@ -5,15 +5,16 @@ using MiniApp1Api.Data.Entities;
 
 namespace MiniApp1Api.Data;
 
-public class TMMealDbContext : IdentityDbContext<UserApp, IdentityRole, string>
+public class TransferProjectDbContext : IdentityDbContext<UserApp, IdentityRole, string>
 {
-    public TMMealDbContext(DbContextOptions<TMMealDbContext> options) : base(options)
+    public TransferProjectDbContext(DbContextOptions<TransferProjectDbContext> options) : base(options)
     {
 
     }
 
     public DbSet<UserRefreshToken> UserRefreshTokens { get; set; }
-    public DbSet<Restourant> Restourants { get; set; }
+
+    public DbSet<TemporaryOrder> TemporaryOrders { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

@@ -4,10 +4,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MiniApp1Api.Migrations
+namespace TransferProject.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class TransferProjectMigration1 : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -33,7 +33,7 @@ namespace MiniApp1Api.Migrations
                     Id = table.Column<string>(type: "text", nullable: false),
                     FirstName = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
                     LastName = table.Column<string>(type: "character varying(32)", maxLength: 32, nullable: false),
-                    Address = table.Column<string>(type: "text", nullable: false),
+                    Address = table.Column<string>(type: "text", nullable: true),
                     IpAddress = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
                     IsDeleted = table.Column<bool>(type: "boolean", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),

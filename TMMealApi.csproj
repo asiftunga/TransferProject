@@ -4,15 +4,19 @@
         <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
-        <RootNamespace>MiniApp1Api</RootNamespace>
+        <RootNamespace>TransferProject</RootNamespace>
+        <AssemblyName>TransferProject</AssemblyName>
+        <LangVersion>11</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="FluentValidation" Version="11.8.0" />
         <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
+        <PackageReference Include="MailKit" Version="4.3.0" />
         <PackageReference Include="Microsoft.AspNet.WebApi.Versioning" Version="5.1.0" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="7.0.13" />
         <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="7.0.13" />
+        <PackageReference Include="Microsoft.AspNetCore.JsonPatch" Version="8.0.0" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.3" />
         <PackageReference Include="Microsoft.EntityFrameworkCore" Version="7.0.13" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="7.0.13">
@@ -30,16 +34,12 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\SharedLibrary\SharedLibrary.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
       <Folder Include="Commands" />
-      <Folder Include="Constants" />
       <Folder Include="Controllers" />
       <Folder Include="Events" />
       <Folder Include="Extensions" />
       <Folder Include="Middleware" />
+      <Folder Include="Migrations\" />
       <Folder Include="Models" />
       <Folder Include="ObjectResults" />
     </ItemGroup>
