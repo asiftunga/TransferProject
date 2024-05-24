@@ -37,7 +37,7 @@ public class AuthV1Controller : ControllerBase
     }
 
     [HttpPost("")]
-    public async Task<IActionResult> CreateUserToken([FromBody] CreateTokenRequest request)
+    public async Task<IActionResult> CreateUserToken([FromBody] CreateTokenRequest request) //login
     {
         if (request is null)
         {
@@ -309,7 +309,7 @@ public class AuthV1Controller : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> RevokeRefreshToken(string refreshToken)
+    public async Task<IActionResult> RevokeRefreshToken(string refreshToken) //sign out
     {
         UserRefreshToken? existingRefreshToken =
             await _transferProjectDbContext.UserRefreshTokens.Where(x => x.Code == refreshToken).SingleOrDefaultAsync();

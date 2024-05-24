@@ -16,6 +16,7 @@ namespace MiniApp1Api.V1.Controllers;
 
 
 [ApiController]
+[Authorize]
 [ApiVersion("1.0")]
 [Route("api/[controller]/orders")]
 public class OrderV1Controller : ControllerBase
@@ -35,10 +36,17 @@ public class OrderV1Controller : ControllerBase
     }
 
     [Authorize]
-    [HttpGet("order-info/{email}/{orderType:int}")]
-    public async Task<IActionResult> GetOrderInfo([FromRoute(Name = "email")] string email, [FromRoute(Name = "orderType")] int orderType)
+    [HttpGet("order-info/{orderType:int}")]
+    public async Task<IActionResult> GetOrderInfo([FromRoute(Name = "orderType")] int orderType)
     {
-        UserApp? user = await _userManager.FindByEmailAsync(email);
+        Claim? email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
+
+        if (email?.Value is null)
+        {
+            return Unauthorized();
+        }
+
+        UserApp? user = await _userManager.FindByEmailAsync(email.Value);
 
         if (user == null)
         {
@@ -47,7 +55,7 @@ public class OrderV1Controller : ControllerBase
 
         Claim? userIdClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
 
-        if (userIdClaim.Value is null)
+        if (userIdClaim?.Value is null || user.Id != userIdClaim.Value)
         {
             return Unauthorized();
         }
@@ -68,44 +76,65 @@ public class OrderV1Controller : ControllerBase
         return Ok(orderId);
     }
 
-    [HttpPost("")]
-    public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
     {
-        UserApp user = new()
+        Claim? email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
+
+        if (email?.Value is null)
         {
-            Email = request.Email,
-            PhoneNumber = request.PhoneNumber,
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            UserName = (request.FirstName+request.Email).Replace(" ",""),
-            LockoutEnabled = true,
-            IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
-        };
-
-        IdentityResult result = await _userManager.CreateAsync(user, request.Password);
-
-        if (!result.Succeeded)
-        {
-            List<string> errors = result.Errors.Select(e => e.Description).ToList();
-            string combinedErrors = string.Join(", ", errors);
-
-            ProblemDetails problemDetails = new()
-            {
-                Type = "user-creation-failed",
-                Title = "User creation failed",
-                Status = StatusCodes.Status400BadRequest,
-                Detail = "User creation failed due to the following errors: " + combinedErrors
-            };
-
-            return new ObjectResult(problemDetails);
+            return Unauthorized();
         }
 
-        CreateUserResponse response = new()
+        UserApp? user = await _userManager.FindByEmailAsync(email.Value);
+
+        if (user == null)
         {
-            Id = user.Id
+            return BadRequest("User not found.");
+        }
+
+        Claim? userIdClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim?.Value is null || user.Id != userIdClaim.Value)
+        {
+            return Unauthorized();
+        }
+
+        DateTime now = DateTime.UtcNow;
+
+        TemporaryOrder? temporaryOrder = await _transferProjectDbContext.TemporaryOrders.AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == request.OrderId);
+
+        if (temporaryOrder is null)
+        {
+            return Unauthorized();
+        }
+
+        Order order = new()
+        {
+            OrderId = request.OrderId,
+            UserId = user.Id,
+            Amount = request.Amount,
+            OrderTypes = request.OrderType,
+            CreatedAt = now,
+            CreatedBy = nameof(CreateOrder),
+            UpdatedAt = now,
+            UpdatedBy = nameof(CreateOrder),
+            OrderStatus = OrderStatus.WaitingForMoneyTransfer
         };
 
-        return Created(new Uri(response.Id, UriKind.Relative), response);
+        _transferProjectDbContext.Add(order);
+
+        _emailSenderService.QueueEmail(user.FirstName, user.Email!, request.OrderId, request.Amount, user.Id);
+
+        await _transferProjectDbContext.SaveChangesAsync();
+
+        CreateOrderResponse response = new()
+        {
+            Id = order.Id
+        };
+
+        return Created(new Uri(response.Id.ToString(), UriKind.Relative), response);
     }
 
 }

@@ -1,6 +1,6 @@
 ﻿namespace MiniApp1Api.BackgroundServices.Models;
 
-public class EmailQueueItem
+public class PasswordResetMailQueueItem
 {
     public string UserEmail { get; set; }
 

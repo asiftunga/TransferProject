@@ -16,6 +16,8 @@ public class TransferProjectDbContext : IdentityDbContext<UserApp, IdentityRole,
 
     public DbSet<TemporaryOrder> TemporaryOrders { get; set; }
 
+    public DbSet<Order> Orders { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfigurationsFromAssembly(GetType().Assembly);

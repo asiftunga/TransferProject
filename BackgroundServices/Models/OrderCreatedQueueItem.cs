@@ -1,0 +1,14 @@
+﻿namespace MiniApp1Api.BackgroundServices.Models;
+
+public class OrderCreatedQueueItem
+{
+    public string UserName { get; set; }
+
+    public string UserEmail { get; set; }
+
+    public Guid OrderId { get; set; }
+
+    public int Amount { get; set; }
+
+    public string UserId { get; set; }
+}
