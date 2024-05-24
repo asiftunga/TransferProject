@@ -35,7 +35,6 @@ public class OrderV1Controller : ControllerBase
         _transferProjectDbContext = transferProjectDbContext;
     }
 
-    [Authorize]
     [HttpGet("order-info/{orderType:int}")]
     public async Task<IActionResult> GetOrderInfo([FromRoute(Name = "orderType")] int orderType)
     {
@@ -76,7 +75,6 @@ public class OrderV1Controller : ControllerBase
         return Ok(orderId);
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
     {
@@ -137,4 +135,50 @@ public class OrderV1Controller : ControllerBase
         return Created(new Uri(response.Id.ToString(), UriKind.Relative), response);
     }
 
+    [HttpDelete("/{orderId:guid}")]
+    public async Task<IActionResult> CancelOrder([FromRoute(Name = "orderId")] Guid orderId)
+    {
+        Claim? email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
+
+        if (email?.Value is null)
+        {
+            return Unauthorized();
+        }
+
+        UserApp? user = await _userManager.FindByEmailAsync(email.Value);
+
+        if (user == null)
+        {
+            return BadRequest("User not found.");
+        }
+
+        Claim? userIdClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim?.Value is null || user.Id != userIdClaim.Value)
+        {
+            return Unauthorized();
+        }
+
+        DateTime now = DateTime.UtcNow;
+
+        Order? order = await _transferProjectDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId && x.OrderStatus != OrderStatus.OrderCanceled);
+
+        TemporaryOrder? temporaryOrder = await _transferProjectDbContext.TemporaryOrders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+
+        if (order is not null)
+        {
+            order.OrderStatus = OrderStatus.OrderCanceled;
+            order.UpdatedAt = now;
+            order.UpdatedBy = nameof(CancelOrder);
+        }
+
+        if (temporaryOrder is not null)
+        {
+            _transferProjectDbContext.Remove(temporaryOrder);
+        }
+
+        await _transferProjectDbContext.SaveChangesAsync();
+
+        return NoContent();
+    }
 }
