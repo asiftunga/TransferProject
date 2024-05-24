@@ -17,16 +17,16 @@ public class TokenService : ITokenService
 {
     private readonly UserManager<UserApp> _userManager;
     private readonly CustomTokenOption _customTokenOptions;
-    private readonly TMMealDbContext _tmMealDbContext;
+    private readonly TransferProjectDbContext _transferProjectDbContext;
 
     public TokenService(
         UserManager<UserApp> userManager,
         IOptions<CustomTokenOption> customTokenOptions,
-        TMMealDbContext tmMealDbContext)
+        TransferProjectDbContext transferProjectDbContext)
     {
         _userManager = userManager;
         _customTokenOptions = customTokenOptions.Value;
-        _tmMealDbContext = tmMealDbContext;
+        _transferProjectDbContext = transferProjectDbContext;
     }
 
     public async Task<TokenModel> CreateToken(UserApp userApp)
@@ -36,20 +36,20 @@ public class TokenService : ITokenService
 
         SecurityKey securityKey = SignService.GetSymmetricSecurtiyKey(_customTokenOptions.SecurityKey);
 
-        SigningCredentials signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
+        SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256Signature);
 
-        JwtSecurityToken jwtSecurityToken = new JwtSecurityToken(
+        JwtSecurityToken jwtSecurityToken = new(
             issuer: _customTokenOptions.Issuer,
             expires: accessTokenExpiration,
             notBefore: DateTime.UtcNow,
             claims: await GetClaims(userApp, _customTokenOptions.Audience),
             signingCredentials: signingCredentials);
 
-        JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+        JwtSecurityTokenHandler handler = new();
 
         string token = handler.WriteToken(jwtSecurityToken);
 
-        TokenModel tokenModel = new TokenModel()
+        TokenModel tokenModel = new()
         {
             AccessToken = token,
             RefreshToken = CreateRefreshToken(),
@@ -62,24 +62,24 @@ public class TokenService : ITokenService
 
     public ClientTokenModel CreateTokenByClient(Client client)
     {
-        var accessTokenExpiration = DateTime.UtcNow.AddMinutes(_customTokenOptions.AccessTokenExpiration);
+        DateTime accessTokenExpiration = DateTime.UtcNow.AddMinutes(_customTokenOptions.AccessTokenExpiration);
 
-        var securityKey = SignService.GetSymmetricSecurtiyKey(_customTokenOptions.SecurityKey);
+        SecurityKey? securityKey = SignService.GetSymmetricSecurtiyKey(_customTokenOptions.SecurityKey);
 
-        SigningCredentials signingCredentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256Signature);
+        SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256Signature);
 
-        JwtSecurityToken jwtSecurityToken = new JwtSecurityToken(
+        JwtSecurityToken jwtSecurityToken = new(
             issuer: _customTokenOptions.Issuer,
             expires: accessTokenExpiration,
             notBefore: DateTime.UtcNow,
             claims: GetClaimsByClient(client),
             signingCredentials: signingCredentials);
 
-        var handler = new JwtSecurityTokenHandler();
+        JwtSecurityTokenHandler? handler = new();
 
-        var token = handler.WriteToken(jwtSecurityToken);
+        string? token = handler.WriteToken(jwtSecurityToken);
 
-        var tokenDto = new ClientTokenModel
+        ClientTokenModel? tokenDto = new()
         {
             AccessToken = token,
 
@@ -103,7 +103,7 @@ public class TokenService : ITokenService
     //auth olmasi gereken userlar icin
     private async Task<IEnumerable<Claim>> GetClaims(UserApp userApp, List<string> audiences)
     {
-        var userList = new List<Claim>
+        List<Claim>? userList = new()
         {
             new Claim(ClaimTypes.NameIdentifier, userApp.Id),
             new Claim(JwtRegisteredClaimNames.Email, userApp.Email),
@@ -113,23 +113,8 @@ public class TokenService : ITokenService
         userList.AddRange(audiences.Select(x => new Claim(JwtRegisteredClaimNames.Aud, x)));
 
         // Kullanıcının rollerini al ve claim listesine ekle
-        var userRoles = await _userManager.GetRolesAsync(userApp);
+        IList<string>? userRoles = await _userManager.GetRolesAsync(userApp);
         userList.AddRange(userRoles.Select(role => new Claim(ClaimTypes.Role, role)));
-
-        if (userRoles.Contains(UserTypes.RestourantOwner.ToString()))
-        {
-            // UserApp ile ilişkili restoranın durumunu sorgula
-            RestourantStatus restaurantStatus = await _tmMealDbContext.Restourants
-                .Where(r => r.UserId == userApp.Id)
-                .Select(r => r.Status)
-                .FirstOrDefaultAsync();
-
-            // Eğer restoran bulunduysa ve durum bilgisi varsa, claim listesine ekle
-            if (!string.IsNullOrEmpty(restaurantStatus.ToString()))
-            {
-                userList.Add(new Claim("restaurantStatus", restaurantStatus.ToString()));
-            }
-        }
 
         return userList;
     }
@@ -137,7 +122,7 @@ public class TokenService : ITokenService
     //auth olmasi gerekmeyen userlarin erismesi icin
     private IEnumerable<Claim> GetClaimsByClient(Client client)
     {
-        var claims = new List<Claim>();
+        List<Claim>? claims = new();
         claims.AddRange(client.Audiences.Select(x => new Claim(JwtRegisteredClaimNames.Aud, x)));
 
         new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString());

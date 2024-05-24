@@ -1,0 +1,11 @@
+sistem tarihi ile kullanicinin ise baslangic tarihi ayni olan ve silinmemis userlari getir
+
+barem enumuna bakarak kullanicinin kacinci yilda oldugunu hesapla
+
+bu baremlerin degerlerini leavestype tablosundan getir
+
+daha sonra kullanicinin annual leave rights tablosundan id sine gore kaydini getir (yoksa yeniden olustur)
+
+daha sonra barem degerini annual leave rights tablosundaki numberofdays degerinin ustune ekle ve kaydet.
+
+Daha sonra annualleavesummaries tablosuna git ve remaining kismina barem degerini ekle. 

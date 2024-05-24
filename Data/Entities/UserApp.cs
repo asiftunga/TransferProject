@@ -15,6 +15,4 @@ public class UserApp : IdentityUser
     public string IpAddress { get; set; }
 
     public bool IsDeleted { get; set; }
-
-    public UserTypes UserTypes { get; set; }
 }

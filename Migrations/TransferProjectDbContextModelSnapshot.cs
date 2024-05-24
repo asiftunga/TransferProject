@@ -2,21 +2,18 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MiniApp1Api.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MiniApp1Api.Migrations
+namespace TransferProject.Migrations
 {
-    [DbContext(typeof(TMMealDbContext))]
-    [Migration("20231112001126_InitialSetup")]
-    partial class InitialSetup
+    [DbContext(typeof(TransferProjectDbContext))]
+    partial class TransferProjectDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -157,6 +154,23 @@ namespace MiniApp1Api.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("MiniApp1Api.Data.Entities.TemporaryOrder", b =>
+                {
+                    b.Property<Guid>("OrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("OrderType")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("OrderId");
+
+                    b.ToTable("TemporaryOrders", (string)null);
+                });
+
             modelBuilder.Entity("MiniApp1Api.Data.Entities.UserApp", b =>
                 {
                     b.Property<string>("Id")
@@ -166,7 +180,6 @@ namespace MiniApp1Api.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")

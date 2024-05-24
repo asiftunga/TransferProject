@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Web.Http;
 using MiniApp1Api.BackgroundServices;
+using MiniApp1Api.Data;
 using MiniApp1Api.Data.Entities;
 using MiniApp1Api.Data.Enums;
 using MiniApp1Api.V1.Models.Requests;
@@ -16,18 +17,55 @@ namespace MiniApp1Api.V1.Controllers;
 
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/[controller]/users")]
-public class UserV1Controller : ControllerBase
+[Route("api/[controller]/orders")]
+public class OrderV1Controller : ControllerBase
 {
     private readonly UserManager<UserApp> _userManager;
     private readonly EmailSenderBackgroundService _emailSenderService;
+    private readonly TransferProjectDbContext _transferProjectDbContext;
 
-    public UserV1Controller(
+    public OrderV1Controller(
         UserManager<UserApp> userManager,
-        EmailSenderBackgroundService emailSenderService)
+        EmailSenderBackgroundService emailSenderService,
+        TransferProjectDbContext transferProjectDbContext)
     {
         _userManager = userManager;
         _emailSenderService = emailSenderService;
+        _transferProjectDbContext = transferProjectDbContext;
+    }
+
+    [Authorize]
+    [HttpGet("order-info/{email}/{orderType:int}")]
+    public async Task<IActionResult> GetOrderInfo([FromRoute(Name = "email")] string email, [FromRoute(Name = "orderType")] int orderType)
+    {
+        UserApp? user = await _userManager.FindByEmailAsync(email);
+
+        if (user == null)
+        {
+            return BadRequest("User not found.");
+        }
+
+        Claim? userIdClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim.Value is null)
+        {
+            return Unauthorized();
+        }
+
+        Guid orderId = Guid.NewGuid();
+
+        TemporaryOrder temporaryOrder = new()
+        {
+            UserId = Guid.Parse(userIdClaim.Value),
+            OrderId = orderId,
+            OrderType = (OrderTypes)orderType
+        };
+
+        _transferProjectDbContext.Add(temporaryOrder);
+
+        await _transferProjectDbContext.SaveChangesAsync();
+
+        return Ok(orderId);
     }
 
     [HttpPost("")]
@@ -68,45 +106,6 @@ public class UserV1Controller : ControllerBase
         };
 
         return Created(new Uri(response.Id, UriKind.Relative), response);
-    }
-
-    [HttpPost("forgot-password")]
-    public async Task<IActionResult> ForgotPassword(string email)
-    {
-        UserApp? user = await _userManager.FindByEmailAsync(email);
-
-        if (user == null)
-        {
-            return BadRequest("User not found.");
-        }
-
-        string token = await _userManager.GeneratePasswordResetTokenAsync(user);
-
-        // Background service kullanarak kuyruğa e-posta bilgilerini ekle
-        _emailSenderService.QueueEmail(user.FirstName, user.Email, token);
-
-        return Ok("Password reset token sent.");
-    }
-
-    [HttpPost("reset-password")]
-    public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
-    {
-        UserApp? user = await _userManager.FindByEmailAsync(model.Email);
-
-        if (user == null)
-        {
-            return BadRequest("User not found.");
-        }
-
-        IdentityResult result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
-
-        if (result.Succeeded)
-        {
-            return Ok("Password has been reset.");
-        }
-
-        // Hata durumunda, hataları döndür
-        return BadRequest(result.Errors);
     }
 
 }

@@ -15,14 +15,10 @@ using MiniApp1Api.Data.Enums;
 using MiniApp1Api.Filters;
 using MiniApp1Api.Services;
 
-var builder = WebApplication.CreateBuilder(args);
-
-// Add services to the container.
+WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-// builder.Services.AddSwaggerGen();
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -57,7 +53,7 @@ builder.Services.AddSwaggerGen(c =>
 
 
 builder.Services.AddScoped<ITokenService, TokenService>();
-builder.Services.AddDbContext<TMMealDbContext>(options =>
+builder.Services.AddDbContext<TransferProjectDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSqlConnection"));
 });
@@ -74,7 +70,7 @@ builder.Services.AddIdentity<UserApp, IdentityRole>(Opt =>
     Opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromHours(2);
     Opt.Lockout.MaxFailedAccessAttempts = 4;
     Opt.Lockout.AllowedForNewUsers = true;
-}).AddEntityFrameworkStores<TMMealDbContext>().AddDefaultTokenProviders();
+}).AddEntityFrameworkStores<TransferProjectDbContext>().AddDefaultTokenProviders();
 
 
 builder.Services.Configure<CustomTokenOption>(builder.Configuration.GetSection("TokenOption"));
@@ -100,7 +96,7 @@ builder.Services.AddAuthentication(options =>
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opts =>
 {
-    var tokenOptions = builder.Configuration.GetSection("TokenOption").Get<CustomTokenOption>();
+    CustomTokenOption? tokenOptions = builder.Configuration.GetSection("TokenOption").Get<CustomTokenOption>();
     opts.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
     {
         ValidIssuer = tokenOptions.Issuer,
@@ -115,7 +111,7 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-var app = builder.Build();
+WebApplication? app = builder.Build();
 
 await CreateRoles(app.Services.CreateScope().ServiceProvider);
 
@@ -137,12 +133,12 @@ app.Run();
 
 async Task CreateRoles(IServiceProvider serviceProvider)
 {
-    var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    RoleManager<IdentityRole>? roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
     string[] roleNames = { UserTypes.User.ToString(), UserTypes.RestourantOwner.ToString() };
-    foreach (var roleName in roleNames)
+    foreach (string? roleName in roleNames)
     {
-        var roleExist = await roleManager.RoleExistsAsync(roleName);
+        bool roleExist = await roleManager.RoleExistsAsync(roleName);
         if (!roleExist)
         {
             await roleManager.CreateAsync(new IdentityRole(roleName));

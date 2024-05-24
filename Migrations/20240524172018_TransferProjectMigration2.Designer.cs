@@ -9,11 +9,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
-namespace MiniApp1Api.Migrations
+namespace TransferProject.Migrations
 {
-    [DbContext(typeof(TMMealDbContext))]
-    [Migration("20231111235930_Initial")]
-    partial class Initial
+    [DbContext(typeof(TransferProjectDbContext))]
+    [Migration("20240524172018_TransferProjectMigration2")]
+    partial class TransferProjectMigration2
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -157,6 +157,23 @@ namespace MiniApp1Api.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("MiniApp1Api.Data.Entities.TemporaryOrder", b =>
+                {
+                    b.Property<Guid>("OrderId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("OrderType")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("OrderId");
+
+                    b.ToTable("TemporaryOrders", (string)null);
+                });
+
             modelBuilder.Entity("MiniApp1Api.Data.Entities.UserApp", b =>
                 {
                     b.Property<string>("Id")
@@ -166,7 +183,6 @@ namespace MiniApp1Api.Migrations
                         .HasColumnType("integer");
 
                     b.Property<string>("Address")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("ConcurrencyStamp")

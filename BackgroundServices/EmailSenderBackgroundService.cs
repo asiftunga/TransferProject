@@ -32,36 +32,33 @@ public class EmailSenderBackgroundService : BackgroundService
 
             if (_emailQueue.TryDequeue(out EmailQueueItem queueItem))
             {
-                await SendEmailAsync(queueItem.UserEmail, queueItem.Token);
+                await SendEmailAsync(queueItem.UserName, queueItem.UserEmail, queueItem.Token);
             }
         }
     }
 
-    public void QueueEmail(string email, string token)
+    public void QueueEmail(string username, string email, string token)
     {
-        _emailQueue.Enqueue(new EmailQueueItem { UserEmail = email, Token = token });
+        _emailQueue.Enqueue(new EmailQueueItem { UserName = username, UserEmail = email, Token = token });
         _signal.Release();
     }
 
-    private async Task SendEmailAsync(string emailAddress, string token)
+    private async Task SendEmailAsync(string username, string emailAddress, string token)
     {
-        var email = new MimeMessage();
+        MimeMessage? email = new();
 
         email.From.Add(new MailboxAddress("TMMEAL", _emailSettings.Email));
-        email.To.Add(new MailboxAddress("Selam", emailAddress));
+        email.To.Add(new MailboxAddress(username, emailAddress));
 
-        email.Subject = "Testing out email sending";
+        email.Subject = $"Sifren Olusturuldu {username}";
         email.Body = new TextPart(MimeKit.Text.TextFormat.Html) {
-            Text = "<b>Selam Yarram</b>"
+            Text = "<b>Token: </b>" + token
         };
 
-        using (var smtp = new SmtpClient())
+        using (SmtpClient? smtp = new())
         {
             smtp.Connect("smtp.gmail.com", 587, false);
-
-            // Note: only needed if the SMTP server requires authentication
             smtp.Authenticate(_emailSettings.Email, _emailSettings.Password);
-
             smtp.Send(email);
             smtp.Disconnect(true);
         }

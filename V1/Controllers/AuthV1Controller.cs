@@ -22,16 +22,16 @@ public class AuthV1Controller : ControllerBase
     private readonly UserManager<UserApp> _userManager;
     private readonly List<Client> _clients;
     private readonly ITokenService _tokenService;
-    private readonly TMMealDbContext _tmMealDbContext;
+    private readonly TransferProjectDbContext _transferProjectDbContext;
 
     public AuthV1Controller(
         IOptions<List<Client>> optionsClient,
         UserManager<UserApp> userManager,
         ITokenService tokenService,
-        TMMealDbContext tmMealDbContext)
+        TransferProjectDbContext transferProjectDbContext)
     {
         _clients = optionsClient.Value;
-        _tmMealDbContext = tmMealDbContext;
+        _transferProjectDbContext = transferProjectDbContext;
         _userManager = userManager;
         _tokenService = tokenService;
     }
@@ -48,7 +48,7 @@ public class AuthV1Controller : ControllerBase
 
         if (user is null)
         {
-            ProblemDetails problemDetails = new ProblemDetails
+            ProblemDetails problemDetails = new()
             {
                 Type = "email-or-password-is-wrong",
                 Title = "Email Or Passwaord Is Wrong",
@@ -65,7 +65,7 @@ public class AuthV1Controller : ControllerBase
         {
             if (await _userManager.IsLockedOutAsync(user))
             {
-                ProblemDetails problemDetail = new ProblemDetails
+                ProblemDetails problemDetail = new()
                 {
                     Type = "Your-account-has-been-locked.",
                     Title = "Your Account Has Been Locked.",
@@ -78,7 +78,7 @@ public class AuthV1Controller : ControllerBase
 
             await _userManager.AccessFailedAsync(user);
 
-            ProblemDetails problemDetails = new ProblemDetails
+            ProblemDetails problemDetails = new()
             {
                 Type = "email-or-password-is-wrong",
                 Title = "Email Or Passwaord Is Wrong",
@@ -92,7 +92,7 @@ public class AuthV1Controller : ControllerBase
         if (await _userManager.IsLockedOutAsync(user))
         {
 
-            ProblemDetails problemDetails = new ProblemDetails
+            ProblemDetails problemDetails = new()
             {
                 Type = "Your-account-has-been-locked.",
                 Title = "Your Account Has Been Locked.",
@@ -103,29 +103,14 @@ public class AuthV1Controller : ControllerBase
             return new ObjectResult(problemDetails);
         }
 
-        bool isRoleValid = await _userManager.IsInRoleAsync(user, UserTypes.User.ToString());
-
-        if (!isRoleValid)
-        {
-            ProblemDetails problemDetails = new ProblemDetails
-            {
-                Type = "unauthorized",
-                Title = "Unauthorized",
-                Status = StatusCodes.Status401Unauthorized,
-                Detail = "Unauthorized"
-            };
-
-            return new ObjectResult(problemDetails);
-        }
-
         TokenModel token = await _tokenService.CreateToken(user);
 
-        UserRefreshToken? userRefreshToken = await _tmMealDbContext.UserRefreshTokens
+        UserRefreshToken? userRefreshToken = await _transferProjectDbContext.UserRefreshTokens
             .Where(x => x.UserId == user.Id && !user.IsDeleted).SingleOrDefaultAsync();
 
         if (userRefreshToken is null)
         {
-            await _tmMealDbContext.AddAsync(new UserRefreshToken
+            await _transferProjectDbContext.AddAsync(new UserRefreshToken
             {
                 UserId = user.Id,
                 Code = token.RefreshToken,
@@ -138,150 +123,156 @@ public class AuthV1Controller : ControllerBase
             userRefreshToken.Expiration = token.RefreshTokenExpiration;
         }
 
-        await _tmMealDbContext.SaveChangesAsync();
+        await _transferProjectDbContext.SaveChangesAsync();
 
         return Ok(token);
     }
 
-    [HttpPost("")]
-    public async Task<IActionResult> CreateRestourantOwnerToken([FromBody] CreateTokenRequest request)
-    {
-        if (request is null)
-        {
-            throw new ArgumentNullException();
-        }
+    #region deprecatedRegion
 
-        UserApp? user = await _userManager.FindByEmailAsync(request.Email);
+    // [HttpPost("")]
+    // public async Task<IActionResult> CreateRestourantOwnerToken([FromBody] CreateTokenRequest request)
+    // {
+    //     if (request is null)
+    //     {
+    //         throw new ArgumentNullException();
+    //     }
+    //
+    //     UserApp? user = await _userManager.FindByEmailAsync(request.Email);
+    //
+    //     if (user is null)
+    //     {
+    //         ProblemDetails problemDetails = new()
+    //         {
+    //             Type = "email-or-password-is-wrong",
+    //             Title = "Email Or Passwaord Is Wrong",
+    //             Status = StatusCodes.Status400BadRequest,
+    //             Detail = "The specified email or password could not provided."
+    //         };
+    //
+    //         return new ObjectResult(problemDetails);
+    //     }
+    //
+    //     bool isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);
+    //
+    //     if (!isPasswordValid)
+    //     {
+    //         if (await _userManager.IsLockedOutAsync(user))
+    //         {
+    //             ProblemDetails problemDetail = new()
+    //             {
+    //                 Type = "Your-account-has-been-locked.",
+    //                 Title = "Your Account Has Been Locked.",
+    //                 Status = StatusCodes.Status429TooManyRequests,
+    //                 Detail = "Your account has been locked."
+    //             };
+    //
+    //             return new ObjectResult(problemDetail);
+    //         }
+    //
+    //         await _userManager.AccessFailedAsync(user);
+    //
+    //         ProblemDetails problemDetails = new()
+    //         {
+    //             Type = "email-or-password-is-wrong",
+    //             Title = "Email Or Passwaord Is Wrong",
+    //             Status = StatusCodes.Status400BadRequest,
+    //             Detail = "The specified email or password could not provided."
+    //         };
+    //
+    //         return new ObjectResult(problemDetails);
+    //     }
+    //
+    //     if (await _userManager.IsLockedOutAsync(user))
+    //     {
+    //
+    //         ProblemDetails problemDetails = new()
+    //         {
+    //             Type = "Your-account-has-been-locked.",
+    //             Title = "Your Account Has Been Locked.",
+    //             Status = StatusCodes.Status429TooManyRequests,
+    //             Detail = "Your account has been locked."
+    //         };
+    //
+    //         return new ObjectResult(problemDetails);
+    //     }
+    //
+    //     bool isRoleValid = await _userManager.IsInRoleAsync(user, UserTypes.RestourantOwner.ToString());
+    //
+    //     if (!isRoleValid)
+    //     {
+    //         ProblemDetails problemDetails = new()
+    //         {
+    //             Type = "unauthorized",
+    //             Title = "Unauthorized",
+    //             Status = StatusCodes.Status401Unauthorized,
+    //             Detail = "Unauthorized"
+    //         };
+    //
+    //         return new ObjectResult(problemDetails);
+    //     }
+    //
+    //     TokenModel token = await _tokenService.CreateToken(user);
+    //
+    //     UserRefreshToken? userRefreshToken = await _transferProjectDbContext.UserRefreshTokens
+    //         .Where(x => x.UserId == user.Id && !user.IsDeleted).SingleOrDefaultAsync();
+    //
+    //     if (userRefreshToken is null)
+    //     {
+    //         await _transferProjectDbContext.AddAsync(new UserRefreshToken
+    //         {
+    //             UserId = user.Id,
+    //             Code = token.RefreshToken,
+    //             Expiration = token.RefreshTokenExpiration
+    //         });
+    //     }
+    //     else
+    //     {
+    //         userRefreshToken.Code = token.RefreshToken;
+    //         userRefreshToken.Expiration = token.RefreshTokenExpiration;
+    //     }
+    //
+    //     await _transferProjectDbContext.SaveChangesAsync();
+    //
+    //     return Ok(token);
+    // }
 
-        if (user is null)
-        {
-            ProblemDetails problemDetails = new ProblemDetails
-            {
-                Type = "email-or-password-is-wrong",
-                Title = "Email Or Passwaord Is Wrong",
-                Status = StatusCodes.Status400BadRequest,
-                Detail = "The specified email or password could not provided."
-            };
+    // [HttpPost]
+    // public async Task<IActionResult> CreateTokenByClient([FromBody] CreateTokenByClientRequest request)
+    // {
+    //     Client? client = _clients.SingleOrDefault(x => x.Id == request.ClientId && x.Secret == request.ClientSecret);
+    //
+    //     if (client is null)
+    //     {
+    //         ProblemDetails problemDetails = new()
+    //         {
+    //             Type = "clientid-or-clientsecret-not-found",
+    //             Title = "ClientId Or ClientSecret Not Found",
+    //             Status = StatusCodes.Status404NotFound,
+    //             Detail = "The specified clientId or clientSecret could not provided."
+    //         };
+    //
+    //         return new ObjectResult(problemDetails);
+    //     }
+    //
+    //     ClientTokenModel token = _tokenService.CreateTokenByClient(client);
+    //
+    //     return Ok(token);
+    // }
 
-            return new ObjectResult(problemDetails);
-        }
+    //todo : deprecated, return this method later
 
-        bool isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);
-
-        if (!isPasswordValid)
-        {
-            if (await _userManager.IsLockedOutAsync(user))
-            {
-                ProblemDetails problemDetail = new ProblemDetails
-                {
-                    Type = "Your-account-has-been-locked.",
-                    Title = "Your Account Has Been Locked.",
-                    Status = StatusCodes.Status429TooManyRequests,
-                    Detail = "Your account has been locked."
-                };
-
-                return new ObjectResult(problemDetail);
-            }
-
-            await _userManager.AccessFailedAsync(user);
-
-            ProblemDetails problemDetails = new ProblemDetails
-            {
-                Type = "email-or-password-is-wrong",
-                Title = "Email Or Passwaord Is Wrong",
-                Status = StatusCodes.Status400BadRequest,
-                Detail = "The specified email or password could not provided."
-            };
-
-            return new ObjectResult(problemDetails);
-        }
-
-        if (await _userManager.IsLockedOutAsync(user))
-        {
-
-            ProblemDetails problemDetails = new ProblemDetails
-            {
-                Type = "Your-account-has-been-locked.",
-                Title = "Your Account Has Been Locked.",
-                Status = StatusCodes.Status429TooManyRequests,
-                Detail = "Your account has been locked."
-            };
-
-            return new ObjectResult(problemDetails);
-        }
-
-        bool isRoleValid = await _userManager.IsInRoleAsync(user, UserTypes.RestourantOwner.ToString());
-
-        if (!isRoleValid)
-        {
-            ProblemDetails problemDetails = new ProblemDetails
-            {
-                Type = "unauthorized",
-                Title = "Unauthorized",
-                Status = StatusCodes.Status401Unauthorized,
-                Detail = "Unauthorized"
-            };
-
-            return new ObjectResult(problemDetails);
-        }
-
-        TokenModel token = await _tokenService.CreateToken(user);
-
-        UserRefreshToken? userRefreshToken = await _tmMealDbContext.UserRefreshTokens
-            .Where(x => x.UserId == user.Id && !user.IsDeleted).SingleOrDefaultAsync();
-
-        if (userRefreshToken is null)
-        {
-            await _tmMealDbContext.AddAsync(new UserRefreshToken
-            {
-                UserId = user.Id,
-                Code = token.RefreshToken,
-                Expiration = token.RefreshTokenExpiration
-            });
-        }
-        else
-        {
-            userRefreshToken.Code = token.RefreshToken;
-            userRefreshToken.Expiration = token.RefreshTokenExpiration;
-        }
-
-        await _tmMealDbContext.SaveChangesAsync();
-
-        return Ok(token);
-    }
-
-    [HttpPost]
-    public async Task<IActionResult> CreateTokenByClient([FromBody] CreateTokenByClientRequest request)
-    {
-        Client? client = _clients.SingleOrDefault(x => x.Id == request.ClientId && x.Secret == request.ClientSecret);
-
-        if (client is null)
-        {
-            ProblemDetails problemDetails = new ProblemDetails
-            {
-                Type = "clientid-or-clientsecret-not-found",
-                Title = "ClientId Or ClientSecret Not Found",
-                Status = StatusCodes.Status404NotFound,
-                Detail = "The specified clientId or clientSecret could not provided."
-            };
-
-            return new ObjectResult(problemDetails);
-        }
-
-        ClientTokenModel token = _tokenService.CreateTokenByClient(client);
-
-        return Ok(token);
-    }
+    #endregion
 
     [HttpPost]
     public async Task<IActionResult> CreateTokenByRefreshToken(string refreshToken)
     {
-        UserRefreshToken? refreshTokenExists = await _tmMealDbContext.UserRefreshTokens
+        UserRefreshToken? refreshTokenExists = await _transferProjectDbContext.UserRefreshTokens
             .Where(x => x.Code == refreshToken).SingleOrDefaultAsync();
 
         if (refreshTokenExists is null)
         {
-            ProblemDetails problemDetails = new ProblemDetails
+            ProblemDetails problemDetails = new()
             {
                 Type = "refresh-token-not-found",
                 Title = "Refresh Token Not Found",
@@ -296,7 +287,7 @@ public class AuthV1Controller : ControllerBase
 
         if (user is null)
         {
-            ProblemDetails problemDetails = new ProblemDetails
+            ProblemDetails problemDetails = new()
             {
                 Type = "user-id-not-found",
                 Title = "User Id Not Found",
@@ -312,7 +303,7 @@ public class AuthV1Controller : ControllerBase
         refreshTokenExists.Code = token.RefreshToken;
         refreshTokenExists.Expiration = token.RefreshTokenExpiration;
 
-        await _tmMealDbContext.SaveChangesAsync();
+        await _transferProjectDbContext.SaveChangesAsync();
 
         return Ok(token);
     }
@@ -321,11 +312,11 @@ public class AuthV1Controller : ControllerBase
     public async Task<IActionResult> RevokeRefreshToken(string refreshToken)
     {
         UserRefreshToken? existingRefreshToken =
-            await _tmMealDbContext.UserRefreshTokens.Where(x => x.Code == refreshToken).SingleOrDefaultAsync();
+            await _transferProjectDbContext.UserRefreshTokens.Where(x => x.Code == refreshToken).SingleOrDefaultAsync();
 
         if (existingRefreshToken is null)
         {
-            ProblemDetails problemDetails = new ProblemDetails
+            ProblemDetails problemDetails = new()
             {
                 Type = "refresh-token-not-found",
                 Title = "Refresh Token Not Found",
@@ -336,9 +327,9 @@ public class AuthV1Controller : ControllerBase
             return new ObjectResult(problemDetails);
         }
 
-        _tmMealDbContext.Remove(existingRefreshToken);
+        _transferProjectDbContext.Remove(existingRefreshToken);
 
-        await _tmMealDbContext.SaveChangesAsync();
+        await _transferProjectDbContext.SaveChangesAsync();
 
         return NoContent();
     }
