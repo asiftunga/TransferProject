@@ -172,15 +172,17 @@ async Task CreateRoles(IServiceProvider serviceProvider)
 
     UserApp? merdanDbRecord = await identity.FindByEmailAsync(merdan.Email);
 
+    string password = builder.Configuration.GetSection("AdminSettings:Password").Value!;
+
     if (tungaDbRecord is null)
     {
-        await identity.CreateAsync(tunga);
+        await identity.CreateAsync(tunga, password);
         await identity.AddToRoleAsync(tunga, UserTypes.Admin.ToString());
     }
 
     if (merdanDbRecord is null)
     {
-        await identity.CreateAsync(merdan);
+        await identity.CreateAsync(merdan, password);
         await identity.AddToRoleAsync(merdan, UserTypes.Admin.ToString());
     }
 }
