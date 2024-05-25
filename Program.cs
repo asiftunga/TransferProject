@@ -1,3 +1,4 @@
+using System.Net;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using FluentValidation;
@@ -130,12 +131,12 @@ app.MapControllers();
 
 app.Run();
 
-
 async Task CreateRoles(IServiceProvider serviceProvider)
 {
     RoleManager<IdentityRole>? roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    UserManager<UserApp> identity = serviceProvider.GetRequiredService<UserManager<UserApp>>();
 
-    string[] roleNames = { UserTypes.User.ToString(), UserTypes.RestourantOwner.ToString() };
+    string[] roleNames = { UserTypes.User.ToString(), UserTypes.Admin.ToString() };
     foreach (string? roleName in roleNames)
     {
         bool roleExist = await roleManager.RoleExistsAsync(roleName);
@@ -143,5 +144,43 @@ async Task CreateRoles(IServiceProvider serviceProvider)
         {
             await roleManager.CreateAsync(new IdentityRole(roleName));
         }
+    }
+
+    UserApp tunga = new()
+    {
+        Email = "asiftunga@hotmail.com",
+        PhoneNumber = "5335636310",
+        FirstName = "Asif Tunga",
+        LastName = "Mubarek",
+        UserName = ("Asif Tunga" + "asiftunga@hotmail.com").Replace(" ",""),
+        LockoutEnabled = false,
+        IpAddress = "111.111.111.111"
+    };
+
+    UserApp merdan = new()
+    {
+        Email = "212merdan@gmail.com",
+        PhoneNumber = "5522672304",
+        FirstName = "Merdan",
+        LastName = "Kurbanov",
+        UserName = ("Merdan" + "212merdan@gmail.com").Replace(" ",""),
+        LockoutEnabled = false,
+        IpAddress = "111.111.111.111"
+    };
+
+    UserApp? tungaDbRecord = await identity.FindByEmailAsync(tunga.Email);
+
+    UserApp? merdanDbRecord = await identity.FindByEmailAsync(merdan.Email);
+
+    if (tungaDbRecord is null)
+    {
+        await identity.CreateAsync(tunga);
+        await identity.AddToRoleAsync(tunga, UserTypes.Admin.ToString());
+    }
+
+    if (merdanDbRecord is null)
+    {
+        await identity.CreateAsync(merdan);
+        await identity.AddToRoleAsync(merdan, UserTypes.Admin.ToString());
     }
 }

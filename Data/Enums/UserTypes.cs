@@ -4,5 +4,5 @@ public enum UserTypes
 {
     Unknown = 0,
     User = 1,
-    RestourantOwner = 2,
+    Admin = 2,
 }

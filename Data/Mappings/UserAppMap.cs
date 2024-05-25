@@ -13,5 +13,7 @@ public class UserAppMap : IEntityTypeConfiguration<UserApp>
         builder.Property(x => x.Address);
         builder.Property(x => x.IpAddress).HasMaxLength(16).IsRequired();
         builder.Property(x => x.IsDeleted).IsRequired();
+
+        builder.HasIndex(x => x.PhoneNumber).IsUnique();
     }
 }
