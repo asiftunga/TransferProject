@@ -100,8 +100,8 @@ public class EmailSenderBackgroundService : BackgroundService
         MimeMessage? adminMail = new();
 
         adminMail.From.Add(new MailboxAddress("KULLANICI BIR SIPARIS OLUSTURDU!", _emailSettings.Email));
-        adminMail.To.Add(new MailboxAddress(username, AdminMailsConstants.Tunga));
-        adminMail.To.Add(new MailboxAddress(username, AdminMailsConstants.Merdan));
+        adminMail.To.Add(new MailboxAddress("Tunga", AdminMailsConstants.Tunga));
+        adminMail.To.Add(new MailboxAddress("Merdan", AdminMailsConstants.Merdan));
 
         adminMail.Subject = $"{username} Kullanicisi bir adet siparis olusturdu.";
         adminMail.Body = new TextPart(MimeKit.Text.TextFormat.Html) {
