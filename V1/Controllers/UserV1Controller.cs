@@ -1,13 +1,9 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.JsonPatch;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Web.Http;
 using MiniApp1Api.BackgroundServices;
 using MiniApp1Api.Data.Entities;
-using MiniApp1Api.Data.Enums;
 using MiniApp1Api.V1.Models.Requests;
 using MiniApp1Api.V1.Models.Responses;
 
@@ -16,7 +12,7 @@ namespace MiniApp1Api.V1.Controllers;
 
 [ApiController]
 [ApiVersion("1.0")]
-[Route("api/[controller]/users")]
+[Route("api/[controller]/[action]")]
 public class UserV1Controller : ControllerBase
 {
     private readonly UserManager<UserApp> _userManager;
@@ -30,7 +26,7 @@ public class UserV1Controller : ControllerBase
         _emailSenderService = emailSenderService;
     }
 
-    [HttpPost("")]
+    [HttpPost]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
     {
         UserApp user = new()
@@ -43,6 +39,16 @@ public class UserV1Controller : ControllerBase
             LockoutEnabled = true,
             IpAddress = HttpContext.Connection.RemoteIpAddress?.ToString()
         };
+
+        if (user.PhoneNumber is not null)
+        {
+            bool existingUserExists = _userManager.Users.AsNoTracking().Any(x => x.PhoneNumber == request.PhoneNumber);
+
+            if (existingUserExists)
+            {
+                return BadRequest("User phone already exists!");
+            }
+        }
 
         IdentityResult result = await _userManager.CreateAsync(user, request.Password);
 
@@ -70,7 +76,7 @@ public class UserV1Controller : ControllerBase
         return Created(new Uri(response.Id, UriKind.Relative), response);
     }
 
-    [HttpPost("forgot-password")]
+    [HttpPost]
     public async Task<IActionResult> ForgotPassword(string email)
     {
         UserApp? user = await _userManager.FindByEmailAsync(email);
@@ -88,7 +94,7 @@ public class UserV1Controller : ControllerBase
         return Ok("Password reset token sent.");
     }
 
-    [HttpPost("reset-password")]
+    [HttpPost]
     public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
     {
         UserApp? user = await _userManager.FindByEmailAsync(model.Email);

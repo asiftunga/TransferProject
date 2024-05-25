@@ -18,7 +18,7 @@ namespace MiniApp1Api.V1.Controllers;
 [ApiController]
 [Authorize]
 [ApiVersion("1.0")]
-[Route("api/[controller]/orders")]
+[Route("api/[controller]/[action]")]
 public class OrderV1Controller : ControllerBase
 {
     private readonly UserManager<UserApp> _userManager;
@@ -35,7 +35,7 @@ public class OrderV1Controller : ControllerBase
         _transferProjectDbContext = transferProjectDbContext;
     }
 
-    [HttpGet("order-info/{orderType:int}")]
+    [HttpGet("{orderType:int}")]
     public async Task<IActionResult> GetOrderInfo([FromRoute(Name = "orderType")] int orderType)
     {
         Claim? email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
@@ -135,7 +135,7 @@ public class OrderV1Controller : ControllerBase
         return Created(new Uri(response.Id.ToString(), UriKind.Relative), response);
     }
 
-    [HttpDelete("/{orderId:guid}")]
+    [HttpDelete("{orderId:guid}")]
     public async Task<IActionResult> CancelOrder([FromRoute(Name = "orderId")] Guid orderId)
     {
         Claim? email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
