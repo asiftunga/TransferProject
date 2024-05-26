@@ -27,6 +27,9 @@ public class UserV1Controller : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(CreateUserResponse),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request)
     {
         UserApp user = new()
@@ -77,6 +80,9 @@ public class UserV1Controller : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(string),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ForgotPassword(string email)
     {
         UserApp? user = await _userManager.FindByEmailAsync(email);
@@ -95,6 +101,9 @@ public class UserV1Controller : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(string),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
     {
         UserApp? user = await _userManager.FindByEmailAsync(model.Email);

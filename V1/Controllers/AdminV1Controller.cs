@@ -39,6 +39,10 @@ public class AdminV1Controller : ControllerBase
     }
 
     [HttpGet]
+    [ProducesResponseType(typeof(QueryOrderResponse),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> QueryOrders([FromQuery] QueryOrderRequest request)
     {
         IQueryable<Order> query = _transferProjectDbContext.Orders.AsNoTracking();
@@ -101,8 +105,14 @@ public class AdminV1Controller : ControllerBase
     }
 
     [HttpGet("{orderId:guid}")]
+    [ProducesResponseType(typeof(GetOrderInfoResponse),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> OrderInfo([FromRoute(Name = "orderId")] Guid orderId)
     {
+        //todo : eger guid degilse bir exception atilmali
         await ThrowUnauthorizedExceptionIfUserIsNotAdmin(User.Claims);
 
         Order? order = await _transferProjectDbContext.Orders.AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == orderId);
@@ -130,6 +140,11 @@ public class AdminV1Controller : ControllerBase
     }
 
     [HttpPatch("{orderId:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> UpdateOrder([FromRoute(Name = "orderId")] Guid orderId, [FromBody] PatchOrderRequest patchOrderRequest)
     {
         await ThrowUnauthorizedExceptionIfUserIsNotAdmin(User.Claims);
@@ -146,7 +161,7 @@ public class AdminV1Controller : ControllerBase
             {
                 Type = "order-not-found!",
                 Title = "Order Not Found!",
-                Status = StatusCodes.Status401Unauthorized,
+                Status = StatusCodes.Status404NotFound,
                 Detail = "Order not found!"
             };
 

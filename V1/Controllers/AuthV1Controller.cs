@@ -36,7 +36,11 @@ public class AuthV1Controller : ControllerBase
         _tokenService = tokenService;
     }
 
-    [HttpPost("")]
+    [HttpPost]
+    [ProducesResponseType(typeof(TokenModel),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status429TooManyRequests)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateUserToken([FromBody] CreateTokenRequest request) //login
     {
         if (request is null)
@@ -265,6 +269,10 @@ public class AuthV1Controller : ControllerBase
     #endregion
 
     [HttpPost]
+    [ProducesResponseType(typeof(TokenModel),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateTokenByRefreshToken(string refreshToken)
     {
         UserRefreshToken? refreshTokenExists = await _transferProjectDbContext.UserRefreshTokens
@@ -309,8 +317,13 @@ public class AuthV1Controller : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RevokeRefreshToken(string refreshToken) //sign out
     {
+        //todo : refresh token bu access tokena mi ait diye bakilmali
         UserRefreshToken? existingRefreshToken =
             await _transferProjectDbContext.UserRefreshTokens.Where(x => x.Code == refreshToken).SingleOrDefaultAsync();
 

@@ -36,6 +36,11 @@ public class OrderV1Controller : ControllerBase
     }
 
     [HttpGet("{orderType:int}")]
+    [ProducesResponseType(typeof(Guid),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetOrderInfo([FromRoute(Name = "orderType")] int orderType)
     {
         Claim? email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
@@ -76,6 +81,10 @@ public class OrderV1Controller : ControllerBase
     }
 
     [HttpPost]
+    [ProducesResponseType(typeof(CreateOrderResponse), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
     {
         Claim? email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
@@ -136,6 +145,10 @@ public class OrderV1Controller : ControllerBase
     }
 
     [HttpDelete("{orderId:guid}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CancelOrder([FromRoute(Name = "orderId")] Guid orderId)
     {
         Claim? email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
