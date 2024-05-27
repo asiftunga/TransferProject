@@ -6,6 +6,7 @@
     using Microsoft.AspNetCore.Authentication.JwtBearer;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.Net.Http.Headers;
     using Microsoft.OpenApi.Models;
     using MiniApp1Api.BackgroundServices;
     using MiniApp1Api.BackgroundServices.Models;
@@ -54,6 +55,49 @@
             }
         });
     });
+
+    builder.Services.AddCors(options =>
+        {
+            options.AddDefaultPolicy(builder =>
+            {
+                options.AddPolicy("CorsPolicy",
+                                  builder =>
+                                  {
+                                      builder
+                                          .WithOrigins("*")
+                                          .WithHeaders(
+                                              HeaderNames.AcceptLanguage,
+                                              HeaderNames.CacheControl,
+                                              HeaderNames.ContentType,
+                                              HeaderNames.ContentLength,
+                                              HeaderNames.AccessControlAllowOrigin,
+                                              HeaderNames.Authorization,
+                                              HeaderNames.IfNoneMatch,
+                                              "X-Channel",
+                                              "X-Client-Ip",
+                                              "Accept-Language")
+                                          .AllowAnyMethod()
+                                          .AllowCredentials()
+                                          .WithExposedHeaders(
+                                              HeaderNames.Date,
+                                              HeaderNames.TransferEncoding,
+                                              HeaderNames.Vary,
+                                              "X-Content-Type-Options",
+                                              "X-Frame-Options",
+                                              "X-XSS-Protection",
+                                              "X-Paging-Index",
+                                              "X-Paging-Size",
+                                              "X-Paging-TotalCount",
+                                              "X-Paging-TotalPages",
+                                              "X-Paging-HasPreviousPage",
+                                              "X-Paging-HasNextPage",
+                                              "x-build-id",
+                                              "Link")
+                                          .SetPreflightMaxAge(TimeSpan.FromSeconds(3600))
+                                          .SetIsOriginAllowedToAllowWildcardSubdomains();
+                                  });
+            });
+        });
 
 
     builder.Services.AddScoped<ITokenService, TokenService>();
