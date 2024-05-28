@@ -316,7 +316,7 @@ public class AuthV1Controller : ControllerBase
         return Ok(token);
     }
 
-    [HttpPost]
+    [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
