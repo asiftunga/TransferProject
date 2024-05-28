@@ -12,7 +12,7 @@ public class ExampleTypeSafeHub : Hub<IExampleTypeSafeHub>
     }
 
 
-    public async Task BroadCastMessageToCallerClient(string message)
+    public async Task BroadCastMessageToCallerClient(string message) //todo :ui tarafindan tetiklenecek ve bu method da gidip clienti tetikleyecek (herhangi bir sey olabilir)
     {
         await Clients.Caller.ReceiveMessageForCallerClient(message+" direkt serverdan geldi");
     }
