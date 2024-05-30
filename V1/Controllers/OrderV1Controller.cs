@@ -35,6 +35,23 @@ public class OrderV1Controller : ControllerBase
         _transferProjectDbContext = transferProjectDbContext;
     }
 
+    [HttpHead]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetApprovedInfo()
+    {
+        Claim? userIdClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+
+        if (userIdClaim?.Value is null)
+        {
+            return Unauthorized();
+        }
+
+        return NoContent();
+    }
+
     [HttpGet("{orderType:int}")]
     [ProducesResponseType(typeof(Guid),StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

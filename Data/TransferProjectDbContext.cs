@@ -18,6 +18,8 @@ public class TransferProjectDbContext : IdentityDbContext<UserApp, IdentityRole,
 
     public DbSet<Order> Orders { get; set; }
 
+    public DbSet<ApprovedOrders> ApprovedOrders { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfigurationsFromAssembly(GetType().Assembly);
