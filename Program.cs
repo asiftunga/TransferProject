@@ -105,6 +105,7 @@
     {
         options.UseNpgsql(builder.Configuration.GetConnectionString("PostgreSqlConnection"));
     });
+    builder.Services.AddScoped<IIdentityServer, IdentityServer>();
 
     builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
