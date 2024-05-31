@@ -16,7 +16,6 @@ using MiniApp1Api.V1.Models.Responses;
 
 namespace MiniApp1Api.V1.Controllers;
 
-
 [ApiController]
 [Authorize]
 [ApiVersion("1.0")]
