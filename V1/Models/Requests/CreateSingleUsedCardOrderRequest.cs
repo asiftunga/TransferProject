@@ -2,7 +2,7 @@
 
 namespace MiniApp1Api.V1.Models.Requests;
 
-public class CreateOrderRequest
+public class CreateSingleUsedCardOrderRequest
 {
     public Guid OrderId { get; set; }
 
@@ -10,5 +10,7 @@ public class CreateOrderRequest
 
     public int Amount { get; set; }
 
-    
+    public Currencys Currency { get; set; }
+
+    public PaymentMethods Payment { get; set; }
 }
