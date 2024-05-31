@@ -67,7 +67,7 @@ public class SingleUseCardV1Controller : ControllerBase
 
         TemporaryOrder? temporaryOrder = await _transferProjectDbContext.TemporaryOrders.AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == request.OrderId);
 
-        if (temporaryOrder is null)
+        if (temporaryOrder is null || temporaryOrder.OrderType != request.OrderType)
         {
             return Unauthorized();
         }
