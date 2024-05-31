@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using MiniApp1Api.Data;
 using MiniApp1Api.Data.Entities;
 using MiniApp1Api.Data.Enums;
@@ -13,13 +14,11 @@ public class IdentityServer : IIdentityServer
 {
     private readonly TransferProjectDbContext _transferProjectDbContext;
     private readonly IHttpContextAccessor _httpContextAccessor;
-    private readonly UserManager<UserApp> _userManager;
 
-    public IdentityServer(TransferProjectDbContext transferProjectDbContext, IHttpContextAccessor httpContextAccessor, UserManager<UserApp> userManager)
+    public IdentityServer(TransferProjectDbContext transferProjectDbContext, IHttpContextAccessor httpContextAccessor)
     {
         _transferProjectDbContext = transferProjectDbContext;
         _httpContextAccessor = httpContextAccessor;
-        _userManager = userManager;
     }
 
     public async ValueTask<IdentityUserModel> GetAuthenticatedUser()
@@ -33,14 +32,14 @@ public class IdentityServer : IIdentityServer
 
         string userId = _httpContextAccessor.HttpContext.User.Identity.GetAuthenticatedUserId();
 
-        UserApp? user = await _userManager.FindByEmailAsync(email);
+        UserApp? user = await _transferProjectDbContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email == email && !x.IsDeleted);
 
         if (user == null)
         {
             ThrowBadRequestException();
         }
 
-        UserApp? userFromId = await _userManager.FindByIdAsync(userId);
+        UserApp? userFromId = await _transferProjectDbContext.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Id == userId && !x.IsDeleted);
 
         if (userFromId == null)
         {
@@ -69,6 +68,7 @@ public class IdentityServer : IIdentityServer
         identityUserModel.Email = user.Email;
         identityUserModel.Role = userRole;
         identityUserModel.IsAdmin = isAdmin;
+        identityUserModel.User = user;
 
         return identityUserModel;
     }

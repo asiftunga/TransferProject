@@ -48,21 +48,6 @@ public class SingleUseCardV1Controller : ControllerBase
     {
         IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
 
-        UserApp? user = await _userManager.FindByIdAsync(userModel.UserId);
-
-        if (user is null)
-        {
-            return Unauthorized();
-        }
-
-        Console.WriteLine(userModel.UserId);
-
-        Console.WriteLine(userModel.Email);
-
-        Console.WriteLine(userModel.Role);
-
-        Console.WriteLine(userModel.IsAdmin);
-
         DateTime now = DateTime.UtcNow;
 
         TemporaryOrder? temporaryOrder = await _transferProjectDbContext.TemporaryOrders.AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == request.OrderId);
@@ -75,7 +60,7 @@ public class SingleUseCardV1Controller : ControllerBase
         Order order = new()
         {
             OrderId = request.OrderId,
-            UserId = user.Id,
+            UserId = userModel.User.Id,
             Amount = request.Amount,
             OrderTypes = request.OrderType,
             OrderStatus = OrderStatus.WaitingForMoneyTransfer,
@@ -87,7 +72,7 @@ public class SingleUseCardV1Controller : ControllerBase
 
         _transferProjectDbContext.Add(order);
 
-        _emailSenderService.QueueEmail(user.FirstName, user.Email!, request.OrderId, request.Amount, user.Id);
+        _emailSenderService.QueueEmail(userModel.User.FirstName, userModel.User.Email!, request.OrderId, request.Amount, userModel.User.Id);
 
         await _transferProjectDbContext.SaveChangesAsync();
 

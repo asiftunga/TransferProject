@@ -2,7 +2,11 @@
 
 public class ApprovedOrders
 {
-    public string Description { get; set; }
+    public Guid Id { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public string UserId { get; set; }
+
+    public string OrderId { get; set; }
+
+    public bool IsRead { get; set; }
 }

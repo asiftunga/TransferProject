@@ -1,4 +1,5 @@
-﻿using MiniApp1Api.Data.Enums;
+﻿using MiniApp1Api.Data.Entities;
+using MiniApp1Api.Data.Enums;
 
 namespace MiniApp1Api.Services.Models;
 
@@ -11,6 +12,8 @@ public class IdentityUserModel
     public UserTypes? Role { get; set; }
 
     public bool IsAdmin { get; set; }
+
+    public UserApp User { get; set; }
 
     public bool HasRoleOfAdmin(UserTypes? role)
     {

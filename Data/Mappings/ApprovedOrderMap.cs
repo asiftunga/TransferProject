@@ -8,8 +8,10 @@ public class ApprovedOrderMap : IEntityTypeConfiguration<ApprovedOrders>
 {
     public void Configure(EntityTypeBuilder<ApprovedOrders> builder)
     {
-        builder.ToTable("TemporaryOrders");
+        builder.ToTable("ApprovedOrders");
 
-        builder.HasKey(x => x.Description);
+        builder.HasKey(x => x.Id);
+
+
     }
 }
