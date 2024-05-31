@@ -14,6 +14,12 @@ public class Order
 
     public OrderTypes OrderTypes { get; set; }
 
+    public Currencys Currency { get; set; }
+
+    public PaymentMethods Payment { get; set; }
+
+    public OrderStatus OrderStatus { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public string CreatedBy { get; set; }
@@ -21,6 +27,4 @@ public class Order
     public DateTime UpdatedAt { get; set; }
 
     public string UpdatedBy { get; set; }
-
-    public OrderStatus OrderStatus { get; set; }
 }
