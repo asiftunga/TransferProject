@@ -37,6 +37,7 @@ public class SingleUseCardV1Controller : ControllerBase
         _transferProjectDbContext = transferProjectDbContext;
         _identityServer = identityServer;
     }
+//todo bu orderid ye sahip baska bir kayit varsa unauth don her yerde ama ozellikle order kisimlarinda
 
     [HttpPost]
     [ProducesResponseType(typeof(CreateOrderResponse), StatusCodes.Status201Created)]
