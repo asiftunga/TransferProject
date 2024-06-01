@@ -2,9 +2,9 @@
 
 namespace MiniApp1Api.Data.Entities;
 
-public class Order
+public class SingleCardDetail
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
 
     public Guid OrderId { get; set; }
 
@@ -18,9 +18,15 @@ public class Order
 
     public PaymentMethods Payment { get; set; }
 
-    public PaymentAreas PaymentArea { get; set; }
-
     public OrderStatus OrderStatus { get; set; }
+
+    public string? CardName { get; set; }
+
+    public string? CardNumber { get; set; }
+
+    public DateTime? CardDate { get; set; }
+
+    public string? CVV { get; set; }
 
     public DateTime CreatedAt { get; set; }
 

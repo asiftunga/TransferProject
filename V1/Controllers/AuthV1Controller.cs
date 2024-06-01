@@ -48,7 +48,7 @@ public class AuthV1Controller : ControllerBase
             throw new ArgumentNullException();
         }
 
-        UserApp? user = await _userManager.FindByEmailAsync(request.Email);
+        UserApp? user = _transferProjectDbContext.Users.AsNoTracking().FirstOrDefault(x => x.Email == request.Email && !x.IsDeleted);
 
         if (user is null)
         {
@@ -291,7 +291,7 @@ public class AuthV1Controller : ControllerBase
             return new ObjectResult(problemDetails);
         }
 
-        UserApp? user = await _userManager.FindByIdAsync(refreshTokenExists.UserId);
+        UserApp? user = _transferProjectDbContext.Users.AsNoTracking().FirstOrDefault(x => x.Id == refreshTokenExists.UserId && !x.IsDeleted);
 
         if (user is null)
         {
@@ -323,7 +323,6 @@ public class AuthV1Controller : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> RevokeRefreshToken(string refreshToken) //sign out
     {
-        //todo : refresh token bu access tokena mi ait diye bakilmali
         UserRefreshToken? existingRefreshToken =
             await _transferProjectDbContext.UserRefreshTokens.Where(x => x.Code == refreshToken).SingleOrDefaultAsync();
 
