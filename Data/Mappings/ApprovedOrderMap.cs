@@ -4,9 +4,9 @@ using MiniApp1Api.Data.Entities;
 
 namespace MiniApp1Api.Data.Mappings;
 
-public class ApprovedOrderMap : IEntityTypeConfiguration<ApprovedOrders>
+public class ApprovedOrderMap : IEntityTypeConfiguration<ApprovedOrder>
 {
-    public void Configure(EntityTypeBuilder<ApprovedOrders> builder)
+    public void Configure(EntityTypeBuilder<ApprovedOrder> builder)
     {
         builder.ToTable("ApprovedOrders");
 
