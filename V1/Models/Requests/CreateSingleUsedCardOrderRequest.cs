@@ -12,5 +12,7 @@ public class CreateSingleUsedCardOrderRequest
 
     public Currencys Currency { get; set; }
 
-    public PaymentMethods Payment { get; set; }
+    public PaymentMethods PaymentMethod { get; set; }
+
+    public PaymentAreas? PaymentArea { get; set; }
 }

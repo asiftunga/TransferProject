@@ -18,7 +18,7 @@ public class Order
 
     public PaymentMethods Payment { get; set; }
 
-    public PaymentAreas PaymentArea { get; set; }
+    public PaymentAreas? PaymentArea { get; set; }
 
     public OrderStatus OrderStatus { get; set; }
 

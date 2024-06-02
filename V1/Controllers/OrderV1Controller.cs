@@ -9,6 +9,9 @@ using MiniApp1Api.BackgroundServices;
 using MiniApp1Api.Data;
 using MiniApp1Api.Data.Entities;
 using MiniApp1Api.Data.Enums;
+using MiniApp1Api.Data.Identity;
+using MiniApp1Api.Services;
+using MiniApp1Api.Services.Models;
 using MiniApp1Api.V1.Models.Requests;
 using MiniApp1Api.V1.Models.Responses;
 
@@ -21,18 +24,20 @@ namespace MiniApp1Api.V1.Controllers;
 [Route("api/[controller]/[action]")]
 public class OrderV1Controller : ControllerBase
 {
-    private readonly UserManager<UserApp> _userManager;
+    private readonly CustomUserManager<UserApp> _userManager;
     private readonly EmailSenderBackgroundService _emailSenderService;
     private readonly TransferProjectDbContext _transferProjectDbContext;
+    private readonly IIdentityServer _identityServer;
 
     public OrderV1Controller(
-        UserManager<UserApp> userManager,
+        CustomUserManager<UserApp> userManager,
         EmailSenderBackgroundService emailSenderService,
-        TransferProjectDbContext transferProjectDbContext)
+        TransferProjectDbContext transferProjectDbContext, IIdentityServer identityServer)
     {
         _userManager = userManager;
         _emailSenderService = emailSenderService;
         _transferProjectDbContext = transferProjectDbContext;
+        _identityServer = identityServer;
     }
 
     [HttpHead]
@@ -42,12 +47,11 @@ public class OrderV1Controller : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetApprovedInfo()
     {
-        Claim? userIdClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+        IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
 
-        if (userIdClaim?.Value is null)
-        {
-            return Unauthorized();
-        }
+        bool anyUnreadMessage = await _transferProjectDbContext.ApprovedOrders.AsNoTracking().AnyAsync(x => x.UserId == userModel.UserId && x.IsRead);
+
+        HttpContext.Response.Headers.Add("X-IsAnyUnreadMessages", anyUnreadMessage.ToString());
 
         return NoContent();
     }
@@ -60,32 +64,13 @@ public class OrderV1Controller : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> GetOrderInfo([FromRoute(Name = "orderType")] int orderType)
     {
-        Claim? email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
-
-        if (email?.Value is null)
-        {
-            return Unauthorized();
-        }
-
-        UserApp? user = await _userManager.FindByEmailAsync(email.Value);
-
-        if (user == null)
-        {
-            return BadRequest("User not found.");
-        }
-
-        Claim? userIdClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
-
-        if (userIdClaim?.Value is null || user.Id != userIdClaim.Value)
-        {
-            return Unauthorized();
-        }
+        IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
 
         Guid orderId = Guid.NewGuid();
 
         TemporaryOrder temporaryOrder = new()
         {
-            UserId = Guid.Parse(userIdClaim.Value),
+            UserId = Guid.Parse(userModel.UserId),
             OrderId = orderId,
             OrderType = (OrderTypes)orderType
         };

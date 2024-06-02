@@ -14,6 +14,8 @@ public class QueryOrderResponse
 
     public OrderTypes OrderTypes { get; set; }
 
+    public Currencys Currency { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public string CreatedBy { get; set; }

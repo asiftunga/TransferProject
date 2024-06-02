@@ -37,6 +37,7 @@ public class SingleUseCardV1Controller : ControllerBase
         _transferProjectDbContext = transferProjectDbContext;
         _identityServer = identityServer;
     }
+
 //todo bu orderid ye sahip baska bir kayit varsa unauth don her yerde ama ozellikle order kisimlarinda
 
     [HttpPost]
@@ -47,6 +48,13 @@ public class SingleUseCardV1Controller : ControllerBase
     public async Task<IActionResult> CreateSingleCardOrder([FromBody] CreateSingleUsedCardOrderRequest request)
     {
         IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
+
+        bool singleCardOrder = await _transferProjectDbContext.SingleCardDetails.AsNoTracking().AnyAsync(x => x.OrderId == request.OrderId);
+
+        if (singleCardOrder)
+        {
+            return BadRequest("There is already created order with this order id");
+        }
 
         DateTime now = DateTime.UtcNow;
 
@@ -62,6 +70,9 @@ public class SingleUseCardV1Controller : ControllerBase
             OrderId = request.OrderId,
             UserId = userModel.User.Id,
             Amount = request.Amount,
+            Currency = request.Currency,
+            Payment = request.PaymentMethod,
+            PaymentArea = request.PaymentArea,
             OrderTypes = request.OrderType,
             OrderStatus = OrderStatus.WaitingForMoneyTransfer,
             CreatedAt = now,
@@ -72,9 +83,31 @@ public class SingleUseCardV1Controller : ControllerBase
 
         _transferProjectDbContext.Add(order);
 
-        _emailSenderService.QueueEmail(userModel.User.FirstName, userModel.User.Email!, request.OrderId, request.Amount, userModel.User.Id);
+        SingleCardDetail singleCardDetail = new()
+        {
+            Id = Guid.NewGuid(),
+            OrderId = order.OrderId,
+            UserId = userModel.UserId,
+            Amount = order.Amount,
+            OrderTypes = order.OrderTypes,
+            Currency = order.Currency,
+            Payment = order.Payment,
+            OrderStatus = OrderStatus.WaitingForMoneyTransfer,
+            CardName = null,
+            CardNumber = null,
+            CardDate = null,
+            CVV = null,
+            CreatedAt = now,
+            CreatedBy = nameof(CreateSingleCardOrder),
+            UpdatedAt = now,
+            UpdatedBy = nameof(CreateSingleCardOrder)
+        };
+
+        _transferProjectDbContext.Add(singleCardDetail);
 
         await _transferProjectDbContext.SaveChangesAsync();
+
+        _emailSenderService.QueueEmail(userModel.User.FirstName, userModel.User.Email!, request.OrderId, request.Amount, userModel.User.Id);
 
         CreateOrderResponse response = new()
         {
@@ -84,13 +117,87 @@ public class SingleUseCardV1Controller : ControllerBase
         return Created(new Uri(response.Id.ToString(), UriKind.Relative), response);
     }
 
-    [HttpDelete("{orderId:guid}")]
+    [HttpGet("{orderId:guid}")]
+    [ProducesResponseType(typeof(SingleCardDetail), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> GetSingleCardOrder([FromRoute(Name = "orderId")] Guid orderId)
+    {
+        IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
+
+        SingleCardDetail? singleCard = await _transferProjectDbContext.SingleCardDetails.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == userModel.UserId);
+
+        if (singleCard is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(singleCard);
+    }
+
+    [HttpPatch("{orderId:guid}")] //only admins
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateSingleCardOrder([FromRoute(Name = "orderId")] Guid orderId)
+    public async Task<IActionResult> UpdateSingleCardOrder([FromRoute(Name = "orderId")] Guid orderId, [FromBody] UpdateSingleCardOrderRequest request)
     {
+        IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
+
+        if (!userModel.IsAdmin)
+        {
+            return Unauthorized();
+        }
+
+        SingleCardDetail? singleCard = await _transferProjectDbContext.SingleCardDetails.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == request.UserId);
+
+        if (singleCard is null)
+        {
+            return NotFound();
+        }
+
+        if (singleCard.OrderStatus == OrderStatus.OrderCanceled)
+        {
+            return BadRequest("Single card with this status can not updated");
+        }
+
+        Order? order = await _transferProjectDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == request.UserId);
+
+        if (order is null)
+        {
+            return NotFound();
+        }
+
+        if (order.OrderStatus == OrderStatus.OrderCanceled)
+        {
+            return BadRequest("Single card with this status can not updated");
+        }
+
+        DateTime now = DateTime.UtcNow;
+
+        order.OrderStatus = OrderStatus.OrderCompleted;
+        order.UpdatedAt = now;
+        order.UpdatedBy = nameof(UpdateSingleCardOrder);
+
+        singleCard.CardName = request.CardName;
+        singleCard.CardDate = request.CardDate;
+        singleCard.CardNumber = request.CardNumber;
+        singleCard.CVV = request.CVV;
+        singleCard.UpdatedAt = now;
+        singleCard.OrderStatus = OrderStatus.OrderCompleted;
+        singleCard.UpdatedBy = nameof(UpdateSingleCardOrder);
+
+        ApprovedOrder approvedOrder = new()
+        {
+            Id = Guid.NewGuid(),
+            UserId = request.UserId,
+            OrderId = orderId,
+            IsRead = false
+        };
+
+        _transferProjectDbContext.Add(approvedOrder);
+
         await _transferProjectDbContext.SaveChangesAsync();
 
         return NoContent();
@@ -103,32 +210,15 @@ public class SingleUseCardV1Controller : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> CancelSingleCardOrder([FromRoute(Name = "orderId")] Guid orderId)
     {
-        Claim? email = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
-
-        if (email?.Value is null)
-        {
-            return Unauthorized();
-        }
-
-        UserApp? user = await _userManager.FindByEmailAsync(email.Value);
-
-        if (user == null)
-        {
-            return BadRequest("User not found.");
-        }
-
-        Claim? userIdClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
-
-        if (userIdClaim?.Value is null || user.Id != userIdClaim.Value)
-        {
-            return Unauthorized();
-        }
+        IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
 
         DateTime now = DateTime.UtcNow;
 
-        Order? order = await _transferProjectDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId && x.OrderStatus != OrderStatus.OrderCanceled);
+        Order? order = await _transferProjectDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == userModel.UserId && x.OrderStatus != OrderStatus.OrderCanceled);
 
         TemporaryOrder? temporaryOrder = await _transferProjectDbContext.TemporaryOrders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+
+        SingleCardDetail? singleCard = await _transferProjectDbContext.SingleCardDetails.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == userModel.UserId);
 
         if (order is not null)
         {
@@ -140,6 +230,13 @@ public class SingleUseCardV1Controller : ControllerBase
         if (temporaryOrder is not null)
         {
             _transferProjectDbContext.Remove(temporaryOrder);
+        }
+
+        if (singleCard is not null)
+        {
+            singleCard.OrderStatus = OrderStatus.OrderCanceled;
+            singleCard.UpdatedAt = now;
+            singleCard.UpdatedBy = nameof(CancelSingleCardOrder);
         }
 
         await _transferProjectDbContext.SaveChangesAsync();

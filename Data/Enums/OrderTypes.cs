@@ -3,7 +3,7 @@
 public enum OrderTypes
 {
     Unknown = 0,
-    TemporaryCard = 1,
+    SingleUseCard = 1,
     Server = 2,
     Binance = 3,
     Vpn = 4,
