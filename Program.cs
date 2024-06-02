@@ -14,6 +14,7 @@
     using MiniApp1Api.Data;
     using MiniApp1Api.Data.Entities;
     using MiniApp1Api.Data.Enums;
+    using MiniApp1Api.Data.Identity;
     using MiniApp1Api.Filters;
     using MiniApp1Api.Services;
     using TransferProject.Hubs;
@@ -84,6 +85,7 @@
                                               HeaderNames.Vary,
                                               "X-Content-Type-Options",
                                               "X-Frame-Options",
+                                              "X-IsAnyUnreadMessages",
                                               "X-XSS-Protection",
                                               "X-Paging-Index",
                                               "X-Paging-Size",
@@ -120,6 +122,8 @@
         Opt.Lockout.MaxFailedAccessAttempts = 4;
         Opt.Lockout.AllowedForNewUsers = true;
     }).AddEntityFrameworkStores<TransferProjectDbContext>().AddDefaultTokenProviders();
+
+    builder.Services.AddScoped<CustomUserManager<UserApp>>();
 
 
     builder.Services.Configure<CustomTokenOption>(builder.Configuration.GetSection("TokenOption"));

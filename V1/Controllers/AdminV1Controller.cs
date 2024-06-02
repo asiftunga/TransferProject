@@ -9,6 +9,8 @@ using MiniApp1Api.Data;
 using MiniApp1Api.Data.Entities;
 using MiniApp1Api.Data.Enums;
 using MiniApp1Api.Filters;
+using MiniApp1Api.Services;
+using MiniApp1Api.Services.Models;
 using MiniApp1Api.V1.Models.Requests;
 using MiniApp1Api.V1.Models.Responses;
 using TransferProject.Extensions;
@@ -27,15 +29,17 @@ public class AdminV1Controller : ControllerBase
     private readonly UserManager<UserApp> _userManager;
     private readonly EmailSenderBackgroundService _emailSenderService;
     private readonly TransferProjectDbContext _transferProjectDbContext;
+    private readonly IIdentityServer _identityServer;
 
     public AdminV1Controller(
         UserManager<UserApp> userManager,
         EmailSenderBackgroundService emailSenderService,
-        TransferProjectDbContext transferProjectDbContext)
+        TransferProjectDbContext transferProjectDbContext, IIdentityServer identityServer)
     {
         _userManager = userManager;
         _emailSenderService = emailSenderService;
         _transferProjectDbContext = transferProjectDbContext;
+        _identityServer = identityServer;
     }
 
     [HttpGet]
@@ -45,6 +49,13 @@ public class AdminV1Controller : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> QueryOrders([FromQuery] QueryOrderRequest request)
     {
+        IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
+
+        if (!userModel.IsAdmin)
+        {
+            return Unauthorized();
+        }
+
         IQueryable<Order> query = _transferProjectDbContext.Orders.AsNoTracking();
 
         if (request.AmountStart.HasValue)
@@ -65,6 +76,11 @@ public class AdminV1Controller : ControllerBase
         if (request.OrderType.HasValue)
         {
             query = query.Where(x => x.OrderTypes == request.OrderType);
+        }
+
+        if (request.Currency.HasValue)
+        {
+            query = query.Where(x => x.Currency == request.Currency);
         }
 
         if (!string.IsNullOrWhiteSpace(request.UserId))
@@ -93,6 +109,7 @@ public class AdminV1Controller : ControllerBase
             OrderId = x.OrderId,
             UserId = x.UserId,
             Amount = x.Amount,
+            Currency = x.Currency,
             OrderTypes = x.OrderTypes,
             CreatedAt = x.CreatedAt,
             CreatedBy = x.CreatedBy,
@@ -112,31 +129,7 @@ public class AdminV1Controller : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
     public async Task<IActionResult> OrderInfo([FromRoute(Name = "orderId")] Guid orderId)
     {
-        //todo : eger guid degilse bir exception atilmali
-        await ThrowUnauthorizedExceptionIfUserIsNotAdmin(User.Claims);
-
-        Order? order = await _transferProjectDbContext.Orders.AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == orderId);
-
-        if (order is null)
-        {
-            return NotFound();
-        }
-
-        GetOrderInfoResponse response = new()
-        {
-            Id = order.Id,
-            OrderId = orderId,
-            UserId = order.UserId,
-            Amount = order.Amount,
-            OrderTypes = order.OrderTypes,
-            CreatedAt = order.CreatedAt,
-            CreatedBy = order.CreatedBy,
-            UpdatedAt = order.UpdatedAt,
-            UpdatedBy = order.UpdatedBy,
-            OrderStatus = order.OrderStatus
-        };
-
-        return Ok(response);
+        return Ok();
     }
 
     [HttpPatch("{orderId:guid}")]
@@ -145,15 +138,20 @@ public class AdminV1Controller : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> UpdateOrder([FromRoute(Name = "orderId")] Guid orderId, [FromBody] PatchOrderRequest patchOrderRequest)
+    public async Task<IActionResult> UpdateOrderStatus([FromRoute(Name = "orderId")] Guid orderId, [FromBody] PatchOrderRequest patchOrderRequest)
     {
-        await ThrowUnauthorizedExceptionIfUserIsNotAdmin(User.Claims);
+        IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
+
+        if (!userModel.IsAdmin)
+        {
+            return Unauthorized();
+        }
 
         DateTime now = DateTime.UtcNow;
 
-        Order? order = await _transferProjectDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+        Order? order = await _transferProjectDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == patchOrderRequest.UserId.ToString());
 
-        TemporaryOrder? temporaryOrder = await _transferProjectDbContext.TemporaryOrders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+        TemporaryOrder? temporaryOrder = await _transferProjectDbContext.TemporaryOrders.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == patchOrderRequest.UserId);
 
         if (order is null || temporaryOrder is null)
         {
@@ -168,11 +166,22 @@ public class AdminV1Controller : ControllerBase
             throw new ProblemDetailsException(problemDetails);
         }
 
+
+        if (order.OrderTypes == OrderTypes.SingleUseCard)
+        {
+            SingleCardDetail? singleCardDetail = await _transferProjectDbContext.SingleCardDetails.FirstOrDefaultAsync(x => x.UserId == patchOrderRequest.UserId.ToString() && x.OrderId == orderId);
+
+            if (singleCardDetail is not null)
+            {
+                singleCardDetail.OrderStatus = patchOrderRequest.Status;
+            }
+        }
+
         order.OrderStatus = patchOrderRequest.Status;
         order.UpdatedAt = now;
-        order.UpdatedBy = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email)?.ToString() ?? nameof(UpdateOrder);
+        order.UpdatedBy = userModel.Email;
 
-        if (patchOrderRequest.Status == OrderStatus.OrderCanceled || patchOrderRequest.Status == OrderStatus.OrderCompleted)
+        if (patchOrderRequest.Status == OrderStatus.OrderCanceled)
         {
             _transferProjectDbContext.Remove(temporaryOrder);
         }
@@ -180,68 +189,5 @@ public class AdminV1Controller : ControllerBase
         await _transferProjectDbContext.SaveChangesAsync();
 
         return Ok();
-    }
-
-    private async Task ThrowUnauthorizedExceptionIfUserIsNotAdmin(IEnumerable<Claim> claims)
-    {
-        Claim? email = claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
-
-        if (email?.Value is null)
-        {
-            ProblemDetails problemDetails = new()
-            {
-                Type = "unauthorized!",
-                Title = "unauthorized!",
-                Status = StatusCodes.Status401Unauthorized,
-                Detail = "unauthorized!"
-            };
-
-            throw new ProblemDetailsException(problemDetails);
-        }
-
-        UserApp? user = await _userManager.FindByEmailAsync(email.Value);
-
-        if (user == null)
-        {
-            ProblemDetails problemDetails = new()
-            {
-                Type = "unauthorized!",
-                Title = "unauthorized!",
-                Status = StatusCodes.Status401Unauthorized,
-                Detail = "unauthorized!"
-            };
-
-            throw new ProblemDetailsException(problemDetails);
-        }
-
-        Claim? userIdClaim = claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
-
-        if (userIdClaim?.Value is null || user.Id != userIdClaim.Value)
-        {
-            ProblemDetails problemDetails = new()
-            {
-                Type = "unauthorized!",
-                Title = "unauthorized!",
-                Status = StatusCodes.Status401Unauthorized,
-                Detail = "unauthorized!"
-            };
-
-            throw new ProblemDetailsException(problemDetails);
-        }
-
-        bool isInRole = await _userManager.IsInRoleAsync(user, UserTypes.Admin.ToString());
-
-        if (!isInRole)
-        {
-            ProblemDetails problemDetails = new()
-            {
-                Type = "unauthorized!",
-                Title = "unauthorized!",
-                Status = StatusCodes.Status401Unauthorized,
-                Detail = "unauthorized!"
-            };
-
-            throw new ProblemDetailsException(problemDetails);
-        }
     }
 }

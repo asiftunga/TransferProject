@@ -4,6 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Web.Http;
 using MiniApp1Api.BackgroundServices;
 using MiniApp1Api.Data.Entities;
+using MiniApp1Api.Data.Enums;
+using MiniApp1Api.Data.Identity;
 using MiniApp1Api.V1.Models.Requests;
 using MiniApp1Api.V1.Models.Responses;
 
@@ -15,11 +17,11 @@ namespace MiniApp1Api.V1.Controllers;
 [Route("api/[controller]/[action]")]
 public class UserV1Controller : ControllerBase
 {
-    private readonly UserManager<UserApp> _userManager;
+    private readonly CustomUserManager<UserApp> _userManager;
     private readonly EmailSenderBackgroundService _emailSenderService;
 
     public UserV1Controller(
-        UserManager<UserApp> userManager,
+        CustomUserManager<UserApp> userManager,
         EmailSenderBackgroundService emailSenderService)
     {
         _userManager = userManager;
@@ -69,6 +71,13 @@ public class UserV1Controller : ControllerBase
             };
 
             return new ObjectResult(problemDetails);
+        }
+
+        IdentityResult roleResult = await _userManager.AddToRoleAsync(user, UserTypes.User.ToString());
+
+        if (!roleResult.Succeeded)
+        {
+
         }
 
         CreateUserResponse response = new()

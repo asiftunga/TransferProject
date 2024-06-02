@@ -187,7 +187,7 @@ namespace TransferProject.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -212,7 +212,7 @@ namespace TransferProject.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()
@@ -240,7 +240,7 @@ namespace TransferProject.Migrations
                         .HasColumnType("varchar(4)");
 
                     b.Property<DateTime?>("CardDate")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("CardName")
                         .HasColumnType("varchar(128)");
@@ -249,7 +249,7 @@ namespace TransferProject.Migrations
                         .HasColumnType("varchar(64)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
@@ -271,7 +271,7 @@ namespace TransferProject.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp");
+                        .HasColumnType("timestamptz");
 
                     b.Property<string>("UpdatedBy")
                         .IsRequired()

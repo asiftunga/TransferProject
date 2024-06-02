@@ -49,6 +49,13 @@ public class SingleUseCardV1Controller : ControllerBase
     {
         IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
 
+        bool singleCardOrder = await _transferProjectDbContext.SingleCardDetails.AsNoTracking().AnyAsync(x => x.OrderId == request.OrderId);
+
+        if (singleCardOrder)
+        {
+            return BadRequest("There is already created order with this order id");
+        }
+
         DateTime now = DateTime.UtcNow;
 
         TemporaryOrder? temporaryOrder = await _transferProjectDbContext.TemporaryOrders.AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == request.OrderId);
@@ -129,7 +136,7 @@ public class SingleUseCardV1Controller : ControllerBase
         return Ok(singleCard);
     }
 
-    [HttpPatch("{orderId:guid}")]
+    [HttpPatch("{orderId:guid}")] //only admins
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
@@ -143,7 +150,7 @@ public class SingleUseCardV1Controller : ControllerBase
             return Unauthorized();
         }
 
-        SingleCardDetail? singleCard = await _transferProjectDbContext.SingleCardDetails.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == userModel.UserId);
+        SingleCardDetail? singleCard = await _transferProjectDbContext.SingleCardDetails.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == request.UserId);
 
         if (singleCard is null)
         {
@@ -155,14 +162,41 @@ public class SingleUseCardV1Controller : ControllerBase
             return BadRequest("Single card with this status can not updated");
         }
 
+        Order? order = await _transferProjectDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == request.UserId);
+
+        if (order is null)
+        {
+            return NotFound();
+        }
+
+        if (order.OrderStatus == OrderStatus.OrderCanceled)
+        {
+            return BadRequest("Single card with this status can not updated");
+        }
+
         DateTime now = DateTime.UtcNow;
+
+        order.OrderStatus = OrderStatus.OrderCompleted;
+        order.UpdatedAt = now;
+        order.UpdatedBy = nameof(UpdateSingleCardOrder);
 
         singleCard.CardName = request.CardName;
         singleCard.CardDate = request.CardDate;
         singleCard.CardNumber = request.CardNumber;
         singleCard.CVV = request.CVV;
         singleCard.UpdatedAt = now;
+        singleCard.OrderStatus = OrderStatus.OrderCompleted;
         singleCard.UpdatedBy = nameof(UpdateSingleCardOrder);
+
+        ApprovedOrder approvedOrder = new()
+        {
+            Id = Guid.NewGuid(),
+            UserId = request.UserId,
+            OrderId = orderId,
+            IsRead = false
+        };
+
+        _transferProjectDbContext.Add(approvedOrder);
 
         await _transferProjectDbContext.SaveChangesAsync();
 

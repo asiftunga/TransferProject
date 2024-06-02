@@ -14,7 +14,7 @@ public class CustomUserManager<TUser> : UserManager<TUser> where TUser : Identit
         IQueryable<UserApp> query = _transferProjectDbContext.Users.Where(u => u.Email == email);
         if (!includeDeleted)
         {
-            query = query.Where(u => !u.IsDeleted); // IsDeleted kontrolü ekleniyor
+            query = query.Where(u => !u.IsDeleted);
         }
         return await query.FirstOrDefaultAsync();
     }
