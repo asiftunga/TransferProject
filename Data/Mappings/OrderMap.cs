@@ -20,9 +20,9 @@ public class OrderMap : IEntityTypeConfiguration<Order>
         builder.Property(x => x.Payment).HasColumnType("integer").IsRequired();
         builder.Property(x => x.PaymentArea).HasColumnType("integer").IsRequired();
         builder.Property(x => x.OrderStatus).HasColumnType("integer").IsRequired();
-        builder.Property(x => x.CreatedAt).HasColumnType("timestamp").IsRequired(); // Veya "timestamptz"
+        builder.Property(x => x.CreatedAt).HasColumnType("timestamptz").IsRequired(); // Veya "timestamptz"
         builder.Property(x => x.CreatedBy).HasColumnType("varchar(64)").IsRequired(); // Veya "text"
-        builder.Property(x => x.UpdatedAt).HasColumnType("timestamp").IsRequired(); // Veya "timestamptz"
+        builder.Property(x => x.UpdatedAt).HasColumnType("timestamptz").IsRequired(); // Veya "timestamptz"
         builder.Property(x => x.UpdatedBy).HasColumnType("varchar(64)").IsRequired(); // Veya "text"
     }
 }
