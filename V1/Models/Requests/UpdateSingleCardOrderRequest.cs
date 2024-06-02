@@ -9,4 +9,6 @@ public class UpdateSingleCardOrderRequest
     public DateTime CardDate { get; set; }
 
     public string CVV { get; set; }
+
+    public string UserId { get; set; }
 }

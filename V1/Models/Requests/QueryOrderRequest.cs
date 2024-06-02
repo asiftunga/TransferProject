@@ -18,4 +18,6 @@ public class QueryOrderRequest : PagedRequest
     public DateTime? EndDate { get; set; }
 
     public OrderStatus? OrderStatus { get; set; }
+
+    public Currencys? Currency { get; set; }
 }
