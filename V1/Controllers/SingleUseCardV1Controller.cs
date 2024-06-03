@@ -23,13 +23,13 @@ namespace MiniApp1Api.V1.Controllers;
 public class SingleUseCardV1Controller : ControllerBase
 {
     private readonly UserManager<UserApp> _userManager;
-    private readonly EmailSenderBackgroundService _emailSenderService;
+    private readonly SendOrderInfoToAdminsEmailSenderBackgroundService _emailSenderService;
     private readonly TransferProjectDbContext _transferProjectDbContext;
     private readonly IIdentityServer _identityServer;
 
     public SingleUseCardV1Controller(
         UserManager<UserApp> userManager,
-        EmailSenderBackgroundService emailSenderService,
+        SendOrderInfoToAdminsEmailSenderBackgroundService emailSenderService,
         TransferProjectDbContext transferProjectDbContext, IIdentityServer identityServer)
     {
         _userManager = userManager;
@@ -107,7 +107,7 @@ public class SingleUseCardV1Controller : ControllerBase
 
         await _transferProjectDbContext.SaveChangesAsync();
 
-        _emailSenderService.QueueEmail(userModel.User.FirstName, userModel.User.Email!, request.OrderId, request.Amount, userModel.User.Id);
+        _emailSenderService.QueueEmail(userModel.User.FirstName, userModel.User.Email!, request.OrderId, request.Amount, userModel.User.Id, order.Currency.ToString());
 
         CreateOrderResponse response = new()
         {

@@ -25,17 +25,17 @@ namespace MiniApp1Api.V1.Controllers;
 public class OrderV1Controller : ControllerBase
 {
     private readonly CustomUserManager<UserApp> _userManager;
-    private readonly EmailSenderBackgroundService _emailSenderService;
+    private readonly ForgotPasswordEmailSenderBackgroundService _forgotPasswordEmailSenderService;
     private readonly TransferProjectDbContext _transferProjectDbContext;
     private readonly IIdentityServer _identityServer;
 
     public OrderV1Controller(
         CustomUserManager<UserApp> userManager,
-        EmailSenderBackgroundService emailSenderService,
+        ForgotPasswordEmailSenderBackgroundService forgotPasswordEmailSenderService,
         TransferProjectDbContext transferProjectDbContext, IIdentityServer identityServer)
     {
         _userManager = userManager;
-        _emailSenderService = emailSenderService;
+        _forgotPasswordEmailSenderService = forgotPasswordEmailSenderService;
         _transferProjectDbContext = transferProjectDbContext;
         _identityServer = identityServer;
     }
