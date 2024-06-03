@@ -208,7 +208,7 @@ namespace TransferProject.Migrations
                     b.Property<int>("Payment")
                         .HasColumnType("integer");
 
-                    b.Property<int>("PaymentArea")
+                    b.Property<int?>("PaymentArea")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -240,7 +240,7 @@ namespace TransferProject.Migrations
                         .HasColumnType("varchar(4)");
 
                     b.Property<DateTime?>("CardDate")
-                        .HasColumnType("timestamptz");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("CardName")
                         .HasColumnType("varchar(128)");

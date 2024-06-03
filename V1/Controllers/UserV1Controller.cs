@@ -18,14 +18,14 @@ namespace MiniApp1Api.V1.Controllers;
 public class UserV1Controller : ControllerBase
 {
     private readonly CustomUserManager<UserApp> _userManager;
-    private readonly EmailSenderBackgroundService _emailSenderService;
+    private readonly ForgotPasswordEmailSenderBackgroundService _forgotPasswordEmailSenderService;
 
     public UserV1Controller(
         CustomUserManager<UserApp> userManager,
-        EmailSenderBackgroundService emailSenderService)
+        ForgotPasswordEmailSenderBackgroundService forgotPasswordEmailSenderService)
     {
         _userManager = userManager;
-        _emailSenderService = emailSenderService;
+        _forgotPasswordEmailSenderService = forgotPasswordEmailSenderService;
     }
 
     [HttpPost]
@@ -104,7 +104,7 @@ public class UserV1Controller : ControllerBase
         string token = await _userManager.GeneratePasswordResetTokenAsync(user);
 
         // Background service kullanarak kuyruğa e-posta bilgilerini ekle
-        _emailSenderService.QueueEmail(user.FirstName, user.Email, token);
+        _forgotPasswordEmailSenderService.QueueEmail(user.FirstName, user.Email, token);
 
         return Ok("Password reset token sent.");
     }

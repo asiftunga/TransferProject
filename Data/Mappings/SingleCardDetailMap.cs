@@ -21,7 +21,7 @@ public class SingleCardDetailMap : IEntityTypeConfiguration<SingleCardDetail>
         builder.Property(x => x.OrderStatus).HasColumnType("integer").IsRequired();
         builder.Property(x => x.CardName).HasColumnType("varchar(128)");
         builder.Property(x => x.CardNumber).HasColumnType("varchar(64)");
-        builder.Property(x => x.CardDate).HasColumnType("timestamptz");
+        builder.Property(x => x.CardDate).HasColumnType("timestamp");
         builder.Property(x => x.CVV).HasColumnType("varchar(4)");
         builder.Property(x => x.CreatedAt).HasColumnType("timestamptz").IsRequired();
         builder.Property(x => x.CreatedBy).HasColumnType("varchar(64)").IsRequired(); // Veya "text"
