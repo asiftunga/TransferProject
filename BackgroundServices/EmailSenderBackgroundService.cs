@@ -1,10 +1,5 @@
 ﻿using System.Collections.Concurrent;
-using System.Net;
-using System.Net.Mail;
 using Microsoft.Extensions.Options;
-using MimeKit;
-using MailKit.Net.Smtp;
-using MailKit;
 using MimeKit;
 using MiniApp1Api.BackgroundServices.Models;
 using TransferProject.Constants;
