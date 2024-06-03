@@ -181,7 +181,7 @@ public class SingleUseCardV1Controller : ControllerBase
         order.UpdatedBy = nameof(UpdateSingleCardOrder);
 
         singleCard.CardName = request.CardName;
-        singleCard.CardDate = request.CardDate;
+        singleCard.CardDate = request.CardDate.Date;
         singleCard.CardNumber = request.CardNumber;
         singleCard.CVV = request.CVV;
         singleCard.UpdatedAt = now;

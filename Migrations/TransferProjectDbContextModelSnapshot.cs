@@ -240,7 +240,7 @@ namespace TransferProject.Migrations
                         .HasColumnType("varchar(4)");
 
                     b.Property<DateTime?>("CardDate")
-                        .HasColumnType("timestamptz");
+                        .HasColumnType("timestamp");
 
                     b.Property<string>("CardName")
                         .HasColumnType("varchar(128)");

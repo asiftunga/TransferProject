@@ -54,7 +54,7 @@ public class SendOrderInfoToAdminsEmailSenderBackgroundService : BackgroundServi
 
         using (SmtpClient? smtp = new())
         {
-            smtp.Connect("smtp.gmail.com", 587, false);
+            smtp.Connect("smtp.gmail.com", 587, true);
             smtp.Authenticate(_emailSettings.Email, _emailSettings.Password);
             smtp.Send(adminMail);
             smtp.Disconnect(true);

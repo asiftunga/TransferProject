@@ -49,7 +49,7 @@ public class OrderV1Controller : ControllerBase
     {
         IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
 
-        bool anyUnreadMessage = await _transferProjectDbContext.ApprovedOrders.AsNoTracking().AnyAsync(x => x.UserId == userModel.UserId && x.IsRead);
+        bool anyUnreadMessage = await _transferProjectDbContext.ApprovedOrders.AsNoTracking().AnyAsync(x => x.UserId == userModel.UserId && !x.IsRead);
 
         HttpContext.Response.Headers.Add("X-IsAnyUnreadMessages", anyUnreadMessage.ToString());
 
