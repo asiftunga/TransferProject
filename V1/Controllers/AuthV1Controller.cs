@@ -135,14 +135,14 @@ public class AuthV1Controller : ControllerBase
     #region deprecatedRegion
 
     // [HttpPost("")]
-    // public async Task<IActionResult> CreateRestourantOwnerToken([FromBody] CreateTokenRequest request)
+    // public async Task<IActionResult> CreateRestourantOwnerToken([FromBody] CreateTokenRequest forAdminsRequest)
     // {
-    //     if (request is null)
+    //     if (forAdminsRequest is null)
     //     {
     //         throw new ArgumentNullException();
     //     }
     //
-    //     UserApp? user = await _userManager.FindByEmailAsync(request.Email);
+    //     UserApp? user = await _userManager.FindByEmailAsync(forAdminsRequest.Email);
     //
     //     if (user is null)
     //     {
@@ -157,7 +157,7 @@ public class AuthV1Controller : ControllerBase
     //         return new ObjectResult(problemDetails);
     //     }
     //
-    //     bool isPasswordValid = await _userManager.CheckPasswordAsync(user, request.Password);
+    //     bool isPasswordValid = await _userManager.CheckPasswordAsync(user, forAdminsRequest.Password);
     //
     //     if (!isPasswordValid)
     //     {
@@ -242,9 +242,9 @@ public class AuthV1Controller : ControllerBase
     // }
 
     // [HttpPost]
-    // public async Task<IActionResult> CreateTokenByClient([FromBody] CreateTokenByClientRequest request)
+    // public async Task<IActionResult> CreateTokenByClient([FromBody] CreateTokenByClientRequest forAdminsRequest)
     // {
-    //     Client? client = _clients.SingleOrDefault(x => x.Id == request.ClientId && x.Secret == request.ClientSecret);
+    //     Client? client = _clients.SingleOrDefault(x => x.Id == forAdminsRequest.ClientId && x.Secret == forAdminsRequest.ClientSecret);
     //
     //     if (client is null)
     //     {
