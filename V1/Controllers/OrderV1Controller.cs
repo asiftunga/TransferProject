@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System.Linq.Dynamic.Core;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.JsonPatch;
@@ -14,6 +15,9 @@ using MiniApp1Api.Services;
 using MiniApp1Api.Services.Models;
 using MiniApp1Api.V1.Models.Requests;
 using MiniApp1Api.V1.Models.Responses;
+using TransferProject.Extensions;
+using TransferProject.Models;
+using TransferProject.ObjectResults;
 
 namespace MiniApp1Api.V1.Controllers;
 
@@ -54,6 +58,40 @@ public class OrderV1Controller : ControllerBase
         HttpContext.Response.Headers.Add("X-IsAnyUnreadMessages", anyUnreadMessage.ToString());
 
         return NoContent();
+    }
+
+    [HttpGet]
+    [ProducesResponseType(typeof(QueryOrderResponse),StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
+    public async Task<IActionResult> QueryOrders([FromQuery] QueryOrderRequest request)
+    {
+        IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
+
+        IQueryable<Order> query = _transferProjectDbContext.Orders.AsNoTracking().Where(x => x.UserId == userModel.UserId);
+
+        if (string.IsNullOrWhiteSpace(request.OrderBy))
+        {
+            request.OrderBy = nameof(Order.CreatedAt);
+        }
+
+        IPage<QueryOrderResponse> response = await query.Select(x => new QueryOrderResponse
+        {
+            Id = x.Id,
+            OrderId = x.OrderId,
+            UserId = x.UserId,
+            Amount = x.Amount,
+            Currency = x.Currency,
+            OrderTypes = x.OrderTypes,
+            CreatedAt = x.CreatedAt,
+            CreatedBy = x.CreatedBy,
+            UpdatedAt = x.UpdatedAt,
+            UpdatedBy = x.UpdatedBy,
+            OrderStatus = x.OrderStatus
+        }).ToPageAsync(request);
+
+        return new PageResult<QueryOrderResponse>(response);
     }
 
     [HttpGet("{orderType:int}")]

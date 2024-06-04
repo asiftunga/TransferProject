@@ -47,7 +47,7 @@ public class AdminV1Controller : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> QueryOrders([FromQuery] QueryOrderRequest request)
+    public async Task<IActionResult> QueryOrders([FromQuery] QueryOrderForAdminsRequest forAdminsRequest)
     {
         IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
 
@@ -58,49 +58,49 @@ public class AdminV1Controller : ControllerBase
 
         IQueryable<Order> query = _transferProjectDbContext.Orders.AsNoTracking();
 
-        if (request.AmountStart.HasValue)
+        if (forAdminsRequest.AmountStart.HasValue)
         {
-            query = query.Where(x => x.Amount > request.AmountStart);
+            query = query.Where(x => x.Amount > forAdminsRequest.AmountStart);
         }
 
-        if (request.AmountEnd.HasValue)
+        if (forAdminsRequest.AmountEnd.HasValue)
         {
-            query = query.Where(x => x.Amount < request.AmountEnd);
+            query = query.Where(x => x.Amount < forAdminsRequest.AmountEnd);
         }
 
-        if (request.OrderStatus.HasValue)
+        if (forAdminsRequest.OrderStatus.HasValue)
         {
-            query = query.Where(x => x.OrderStatus == request.OrderStatus);
+            query = query.Where(x => x.OrderStatus == forAdminsRequest.OrderStatus);
         }
 
-        if (request.OrderType.HasValue)
+        if (forAdminsRequest.OrderType.HasValue)
         {
-            query = query.Where(x => x.OrderTypes == request.OrderType);
+            query = query.Where(x => x.OrderTypes == forAdminsRequest.OrderType);
         }
 
-        if (request.Currency.HasValue)
+        if (forAdminsRequest.Currency.HasValue)
         {
-            query = query.Where(x => x.Currency == request.Currency);
+            query = query.Where(x => x.Currency == forAdminsRequest.Currency);
         }
 
-        if (!string.IsNullOrWhiteSpace(request.UserId))
+        if (!string.IsNullOrWhiteSpace(forAdminsRequest.UserId))
         {
-            query = query.Where(x => x.UserId == request.UserId);
+            query = query.Where(x => x.UserId == forAdminsRequest.UserId);
         }
 
-        if (request.StartDate.HasValue)
+        if (forAdminsRequest.StartDate.HasValue)
         {
-            query = query.Where(x => x.CreatedAt.Date > request.StartDate.Value.Date);
+            query = query.Where(x => x.CreatedAt.Date > forAdminsRequest.StartDate.Value.Date);
         }
 
-        if (request.EndDate.HasValue)
+        if (forAdminsRequest.EndDate.HasValue)
         {
-            query = query.Where(x => x.CreatedAt.Date < request.EndDate.Value.Date);
+            query = query.Where(x => x.CreatedAt.Date < forAdminsRequest.EndDate.Value.Date);
         }
 
-        if (string.IsNullOrWhiteSpace(request.OrderBy))
+        if (string.IsNullOrWhiteSpace(forAdminsRequest.OrderBy))
         {
-            request.OrderBy = nameof(Order.CreatedAt);
+            forAdminsRequest.OrderBy = nameof(Order.CreatedAt);
         }
 
         IPage<QueryOrderResponse> response = await query.Select(x => new QueryOrderResponse
@@ -116,7 +116,7 @@ public class AdminV1Controller : ControllerBase
             UpdatedAt = x.UpdatedAt,
             UpdatedBy = x.UpdatedBy,
             OrderStatus = x.OrderStatus
-        }).ToPageAsync(request);
+        }).ToPageAsync(forAdminsRequest);
 
         return new PageResult<QueryOrderResponse>(response);
     }
