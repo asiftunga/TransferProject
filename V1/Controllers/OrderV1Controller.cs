@@ -76,22 +76,36 @@ public class OrderV1Controller : ControllerBase
             request.OrderBy = nameof(Order.CreatedAt);
         }
 
-        IPage<QueryOrderResponse> response = await query.Select(x => new QueryOrderResponse
-        {
-            Id = x.Id,
-            OrderId = x.OrderId,
-            UserId = x.UserId,
-            Amount = x.Amount,
-            Currency = x.Currency,
-            OrderTypes = x.OrderTypes,
-            CreatedAt = x.CreatedAt,
-            CreatedBy = x.CreatedBy,
-            UpdatedAt = x.UpdatedAt,
-            UpdatedBy = x.UpdatedBy,
-            OrderStatus = x.OrderStatus
-        }).ToPageAsync(request);
 
-        return new PageResult<QueryOrderResponse>(response);
+        IPage<Order> pagedOrders = await query.ToPageAsync(request);
+
+
+        List<QueryOrderResponse> responseList = new ();
+
+        foreach (Order order in pagedOrders.Items)
+        {
+            bool isRead = await IsOrderRead(order.OrderId);
+
+            responseList.Add(new QueryOrderResponse
+            {
+                Id = order.Id,
+                OrderId = order.OrderId,
+                UserId = order.UserId,
+                Amount = order.Amount,
+                Currency = order.Currency,
+                OrderTypes = order.OrderTypes,
+                CreatedAt = order.CreatedAt,
+                CreatedBy = order.CreatedBy,
+                UpdatedAt = order.UpdatedAt,
+                UpdatedBy = order.UpdatedBy,
+                OrderStatus = order.OrderStatus,
+                IsRead = isRead
+            });
+        }
+
+        Page<QueryOrderResponse> pagedResponse = new (responseList, pagedOrders.Index, pagedOrders.Size, pagedOrders.TotalCount);
+
+        return Ok(pagedResponse);
     }
 
     [HttpGet("{orderType:int}")]
@@ -118,5 +132,18 @@ public class OrderV1Controller : ControllerBase
         await _transferProjectDbContext.SaveChangesAsync();
 
         return Ok(orderId);
+    }
+
+
+    private async Task<bool> IsOrderRead(Guid orderId)
+    {
+        ApprovedOrder? isRead = await _transferProjectDbContext.ApprovedOrders.AsNoTracking().FirstOrDefaultAsync(m => m.OrderId == orderId);
+
+        if (isRead is null || isRead.IsRead)
+        {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -25,4 +25,6 @@ public class QueryOrderResponse
     public string UpdatedBy { get; set; }
 
     public OrderStatus OrderStatus { get; set; }
+
+    public bool IsRead { get; set; }
 }
