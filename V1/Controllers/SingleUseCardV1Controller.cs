@@ -118,7 +118,7 @@ public class SingleUseCardV1Controller : ControllerBase
     }
 
     [HttpGet("{orderId:guid}")]
-    [ProducesResponseType(typeof(SingleCardDetail), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(GetSingleCardOrderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
@@ -126,14 +126,44 @@ public class SingleUseCardV1Controller : ControllerBase
     {
         IdentityUserModel userModel = await _identityServer.GetAuthenticatedUser();
 
-        SingleCardDetail? singleCard = await _transferProjectDbContext.SingleCardDetails.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == userModel.UserId);
+        SingleCardDetail? singleCard = await _transferProjectDbContext.SingleCardDetails.AsNoTracking().FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == userModel.UserId);
 
         if (singleCard is null)
         {
             return NotFound();
         }
 
-        return Ok(singleCard);
+        ApprovedOrder? approvedOrders = await _transferProjectDbContext.ApprovedOrders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+
+        if (approvedOrders is not null)
+        {
+            if (!approvedOrders.IsRead)
+            {
+                approvedOrders.IsRead = true;
+            }
+        }
+
+        GetSingleCardOrderResponse getSingleCardOrderResponse = new()
+        {
+            Id = singleCard.Id,
+            OrderId = singleCard.OrderId,
+            UserId = singleCard.UserId,
+            Amount = singleCard.Amount,
+            OrderTypes = singleCard.OrderTypes,
+            Currency = singleCard.Currency,
+            Payment = singleCard.Payment,
+            OrderStatus = singleCard.OrderStatus,
+            CardName = singleCard.CardName,
+            CardNumber = singleCard.CardNumber,
+            CardDate = singleCard.CardDate,
+            CVV = singleCard.CVV,
+            CreatedAt = singleCard.CreatedAt,
+            UpdatedAt = singleCard.UpdatedAt
+        };
+
+        await _transferProjectDbContext.SaveChangesAsync();
+
+        return Ok(getSingleCardOrderResponse);
     }
 
     [HttpPatch("{orderId:guid}")] //only admins
