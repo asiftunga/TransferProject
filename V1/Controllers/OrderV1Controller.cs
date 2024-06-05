@@ -71,9 +71,7 @@ public class OrderV1Controller : ControllerBase
             request.OrderBy = nameof(Order.CreatedAt);
         }
 
-
         IPage<Order> pagedOrders = await query.ToPageAsync(request);
-
 
         List<QueryOrderResponse> responseList = new ();
 
