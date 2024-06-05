@@ -1,8 +1,4 @@
-﻿using System.Linq.Dynamic.Core;
-using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.JsonPatch;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Web.Http;
@@ -17,7 +13,6 @@ using MiniApp1Api.V1.Models.Requests;
 using MiniApp1Api.V1.Models.Responses;
 using TransferProject.Extensions;
 using TransferProject.Models;
-using TransferProject.ObjectResults;
 
 namespace MiniApp1Api.V1.Controllers;
 
@@ -76,9 +71,7 @@ public class OrderV1Controller : ControllerBase
             request.OrderBy = nameof(Order.CreatedAt);
         }
 
-
         IPage<Order> pagedOrders = await query.ToPageAsync(request);
-
 
         List<QueryOrderResponse> responseList = new ();
 
