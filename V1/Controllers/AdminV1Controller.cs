@@ -121,17 +121,6 @@ public class AdminV1Controller : ControllerBase
         return new PageResult<QueryOrderResponse>(response);
     }
 
-    [HttpGet("{orderId:guid}")]
-    [ProducesResponseType(typeof(GetOrderInfoResponse),StatusCodes.Status200OK)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
-    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status500InternalServerError)]
-    public async Task<IActionResult> OrderInfo([FromRoute(Name = "orderId")] Guid orderId)
-    {
-        return Ok();
-    }
-
     [HttpPatch("{orderId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
