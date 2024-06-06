@@ -48,7 +48,7 @@ public class AuthV1Controller : ControllerBase
             throw new ArgumentNullException();
         }
 
-        UserApp? user = _transferProjectDbContext.Users.AsNoTracking().FirstOrDefault(x => x.Email == request.Email && !x.IsDeleted);
+        UserApp? user = await _transferProjectDbContext.Users.FirstOrDefaultAsync(x => x.Email == request.Email && !x.IsDeleted);
 
         if (user is null)
         {
