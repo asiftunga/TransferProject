@@ -126,6 +126,13 @@ public class AdminV1Controller : ControllerBase
         return new PageResult<QueryOrderResponse>(response);
     }
 
+    /// <summary>
+    /// Kullanici orderlarini cancel etmek icin veya bilgi girisi yapmak icin bu ep kullanilir.
+    /// </summary>
+    /// <param name="orderId"></param>
+    /// <param name="patchOrderRequest"></param>
+    /// <returns></returns>
+    /// <exception cref="ProblemDetailsException"></exception>
     [HttpPatch("{orderId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
