@@ -42,6 +42,11 @@ public class AdminV1Controller : ControllerBase
         _identityServer = identityServer;
     }
 
+    /// <summary>
+    /// Userlarin orderlarini getirir.
+    /// </summary>
+    /// <param name="forAdminsRequest"></param>
+    /// <returns></returns>
     [HttpGet]
     [ProducesResponseType(typeof(QueryOrderResponse),StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
