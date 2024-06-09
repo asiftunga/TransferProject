@@ -40,6 +40,11 @@ public class SingleUseCardV1Controller : ControllerBase
 
 //todo bu orderid ye sahip baska bir kayit varsa unauth don her yerde ama ozellikle order kisimlarinda
 
+    /// <summary>
+    /// Tek kullanimlik kart yaratmak icin bu epye gelmelisin
+    /// </summary>
+    /// <param name="request">Tek kullanimlik kart create bilgileri.</param>
+    /// <returns>Olusturulan orderin id'si.</returns>
     [HttpPost]
     [ProducesResponseType(typeof(CreateOrderResponse), StatusCodes.Status201Created)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]

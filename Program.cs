@@ -1,4 +1,5 @@
     using System.Net;
+    using System.Reflection;
     using System.Text.Json;
     using System.Text.Json.Serialization;
     using FluentValidation;
@@ -30,6 +31,10 @@
     builder.Services.AddSwaggerGen(c =>
     {
         c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+        c.IncludeXmlComments(xmlPath);
 
         c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
         {

@@ -36,6 +36,12 @@ public class AuthV1Controller : ControllerBase
         _tokenService = tokenService;
     }
 
+    /// <summary>
+    /// Login olmayi saglar.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentNullException"></exception>
     [HttpPost]
     [ProducesResponseType(typeof(TokenModel),StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -268,6 +274,11 @@ public class AuthV1Controller : ControllerBase
 
     #endregion
 
+    /// <summary>
+    /// Access token suresi bittiginde cikis yapmadan refresh token ile yeni bir token almayi saglar
+    /// </summary>
+    /// <param name="refreshToken"></param>
+    /// <returns></returns>
     [HttpPost]
     [ProducesResponseType(typeof(TokenModel),StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -316,6 +327,11 @@ public class AuthV1Controller : ControllerBase
         return Ok(token);
     }
 
+    /// <summary>
+    /// refresh tokeni silmeyi saglar. Logout yapildiginda gelinir
+    /// </summary>
+    /// <param name="refreshToken">Refresh token</param>
+    /// <returns></returns>
     [HttpDelete]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
