@@ -39,6 +39,10 @@ public class OrderV1Controller : ControllerBase
         _identityServer = identityServer;
     }
 
+    /// <summary>
+    /// Kullanicinin herhangi bir bildirimi olup olmadigini header'da doner. Her dk basi buraya gelinmeli.
+    /// </summary>
+    /// <returns></returns>
     [HttpHead]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -55,6 +59,11 @@ public class OrderV1Controller : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Kullanicinin butun siparislerini doner. Okunma bilgisi dahil bir sekilde donus yapar.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpGet]
     [ProducesResponseType(typeof(QueryOrderResponse),StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -101,6 +110,11 @@ public class OrderV1Controller : ControllerBase
         return Ok(pagedResponse);
     }
 
+    /// <summary>
+    /// order type id sine gore unique bir orderid olusturur.
+    /// </summary>
+    /// <param name="orderType"></param>
+    /// <returns></returns>
     [HttpGet("{orderType:int}")]
     [ProducesResponseType(typeof(Guid),StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
