@@ -28,6 +28,11 @@ public class UserV1Controller : ControllerBase
         _forgotPasswordEmailSenderService = forgotPasswordEmailSenderService;
     }
 
+    /// <summary>
+    /// Kullanici olusturur.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost]
     [ProducesResponseType(typeof(CreateUserResponse),StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -88,6 +93,11 @@ public class UserV1Controller : ControllerBase
         return Created(new Uri(response.Id, UriKind.Relative), response);
     }
 
+    /// <summary>
+    /// Sifre sifirlamak icin gelinen yer.
+    /// </summary>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPost]
     [ProducesResponseType(typeof(string),StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -109,6 +119,11 @@ public class UserV1Controller : ControllerBase
         return Ok("Password reset token sent.");
     }
 
+    /// <summary>
+    /// Email linkinden sonra sifre sifirlamak icin sifre sifirlama tokeninin yollandigi yer.
+    /// </summary>
+    /// <param name="model"></param>
+    /// <returns></returns>
     [HttpPost]
     [ProducesResponseType(typeof(string),StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
