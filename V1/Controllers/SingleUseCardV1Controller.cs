@@ -122,6 +122,11 @@ public class SingleUseCardV1Controller : ControllerBase
         return Created(new Uri(response.Id.ToString(), UriKind.Relative), response);
     }
 
+    /// <summary>
+    /// Tek kullanimlik kart detaylarini getirir.
+    /// </summary>
+    /// <param name="orderId"></param>
+    /// <returns></returns>
     [HttpGet("{orderId:guid}")]
     [ProducesResponseType(typeof(GetSingleCardOrderResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
