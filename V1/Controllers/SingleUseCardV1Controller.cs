@@ -176,6 +176,12 @@ public class SingleUseCardV1Controller : ControllerBase
         return Ok(getSingleCardOrderResponse);
     }
 
+    /// <summary>
+    /// Onaylanmis olan siparisler icin adminlerin kart bilgilerini girmesi icin olusturulmus ep.
+    /// </summary>
+    /// <param name="orderId"></param>
+    /// <param name="request"></param>
+    /// <returns></returns>
     [HttpPatch("{orderId:guid}")] //only admins
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
