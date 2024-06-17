@@ -249,6 +249,11 @@ public class SingleUseCardV1Controller : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Tek kullanimlik kart iptali icin gelinecek ep (adminler ve kullanicilar gelebilir)
+    /// </summary>
+    /// <param name="orderId"></param>
+    /// <returns></returns>
     [HttpDelete("{orderId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -260,11 +265,27 @@ public class SingleUseCardV1Controller : ControllerBase
 
         DateTime now = DateTime.UtcNow;
 
-        Order? order = await _transferProjectDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == userModel.UserId && x.OrderStatus != OrderStatus.OrderCanceled);
+        Order? order;
+        TemporaryOrder? temporaryOrder;
+        SingleCardDetail? singleCard;
 
-        TemporaryOrder? temporaryOrder = await _transferProjectDbContext.TemporaryOrders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+        if (userModel.IsAdmin)
+        {
+            order = await _transferProjectDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId && x.OrderStatus != OrderStatus.OrderCanceled);
 
-        SingleCardDetail? singleCard = await _transferProjectDbContext.SingleCardDetails.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == userModel.UserId);
+            temporaryOrder = await _transferProjectDbContext.TemporaryOrders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+
+            singleCard = await _transferProjectDbContext.SingleCardDetails.FirstOrDefaultAsync(x => x.OrderId == orderId);
+        }
+
+        else
+        {
+            order = await _transferProjectDbContext.Orders.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == userModel.UserId && x.OrderStatus != OrderStatus.OrderCanceled);
+
+            temporaryOrder = await _transferProjectDbContext.TemporaryOrders.FirstOrDefaultAsync(x => x.OrderId == orderId);
+
+            singleCard = await _transferProjectDbContext.SingleCardDetails.FirstOrDefaultAsync(x => x.OrderId == orderId && x.UserId == userModel.UserId);
+        }
 
         if (order is not null)
         {
