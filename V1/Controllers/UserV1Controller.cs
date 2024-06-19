@@ -82,7 +82,15 @@ public class UserV1Controller : ControllerBase
 
         if (!roleResult.Succeeded)
         {
+            ProblemDetails problemDetails = new()
+            {
+                Type = "user-creation-failed",
+                Title = "User creation failed",
+                Status = StatusCodes.Status400BadRequest,
+                Detail = "User creation failed due to can not add user role to user"
+            };
 
+            return new ObjectResult(problemDetails);
         }
 
         CreateUserResponse response = new()
