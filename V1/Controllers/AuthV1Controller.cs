@@ -1,9 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Microsoft.Web.Http;
-using MiniApp1Api.Configuration;
 using MiniApp1Api.Data;
 using MiniApp1Api.Data.Entities;
 using MiniApp1Api.Data.Enums;
@@ -20,17 +18,14 @@ namespace MiniApp1Api.V1.Controllers;
 public class AuthV1Controller : ControllerBase
 {
     private readonly UserManager<UserApp> _userManager;
-    private readonly List<Client> _clients;
     private readonly ITokenService _tokenService;
     private readonly TransferProjectDbContext _transferProjectDbContext;
 
     public AuthV1Controller(
-        IOptions<List<Client>> optionsClient,
         UserManager<UserApp> userManager,
         ITokenService tokenService,
         TransferProjectDbContext transferProjectDbContext)
     {
-        _clients = optionsClient.Value;
         _transferProjectDbContext = transferProjectDbContext;
         _userManager = userManager;
         _tokenService = tokenService;
