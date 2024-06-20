@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace MiniApp1Api.Filters;
+namespace TransferProject.Filters;
 
 public class ProblemDetailsExceptionFilter : IActionFilter, IOrderedFilter
 {

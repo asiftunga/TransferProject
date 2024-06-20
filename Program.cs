@@ -9,16 +9,16 @@
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Net.Http.Headers;
     using Microsoft.OpenApi.Models;
-    using MiniApp1Api.BackgroundServices;
-    using MiniApp1Api.BackgroundServices.Models;
-    using MiniApp1Api.Configuration;
-    using MiniApp1Api.Data;
-    using MiniApp1Api.Data.Entities;
-    using MiniApp1Api.Data.Enums;
-    using MiniApp1Api.Data.Identity;
-    using MiniApp1Api.Filters;
-    using MiniApp1Api.Services;
+    using TransferProject.BackgroundServices;
+    using TransferProject.BackgroundServices.Models;
+    using TransferProject.Configuration;
+    using TransferProject.Data;
+    using TransferProject.Data.Entities;
+    using TransferProject.Data.Enums;
+    using TransferProject.Data.Identity;
+    using TransferProject.Filters;
     using TransferProject.Hubs;
+    using TransferProject.Services;
 
     WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 

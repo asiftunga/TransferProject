@@ -2,14 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Web.Http;
-using MiniApp1Api.BackgroundServices;
-using MiniApp1Api.Data.Entities;
-using MiniApp1Api.Data.Enums;
-using MiniApp1Api.Data.Identity;
-using MiniApp1Api.V1.Models.Requests;
-using MiniApp1Api.V1.Models.Responses;
+using TransferProject.BackgroundServices;
+using TransferProject.Data.Entities;
+using TransferProject.Data.Enums;
+using TransferProject.Data.Identity;
+using TransferProject.V1.Models.Requests;
+using TransferProject.V1.Models.Responses;
 
-namespace MiniApp1Api.V1.Controllers;
+namespace TransferProject.V1.Controllers;
 
 
 [ApiController]

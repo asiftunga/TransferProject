@@ -1,7 +1,7 @@
-﻿using MiniApp1Api.Data.Enums;
+﻿using TransferProject.Data.Enums;
 using TransferProject.Models;
 
-namespace MiniApp1Api.V1.Models.Requests;
+namespace TransferProject.V1.Models.Requests;
 
 public class QueryOrderForAdminsRequest : PagedRequest
 {

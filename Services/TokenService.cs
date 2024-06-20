@@ -2,16 +2,14 @@
 using System.Security.Claims;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using MiniApp1Api.Configuration;
-using MiniApp1Api.Data;
-using MiniApp1Api.Data.Entities;
-using MiniApp1Api.Data.Enums;
-using MiniApp1Api.Services.Models;
+using TransferProject.Configuration;
+using TransferProject.Data;
+using TransferProject.Data.Entities;
+using TransferProject.Services.Models;
 
-namespace MiniApp1Api.Services;
+namespace TransferProject.Services;
 
 public class TokenService : ITokenService
 {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace MiniApp1Api.Filters;
+namespace TransferProject.Filters;
 
 public class ProblemDetailsException : Exception
 {

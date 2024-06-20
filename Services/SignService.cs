@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace MiniApp1Api.Services;
+namespace TransferProject.Services;
 
 public static class SignService
 {

@@ -1,8 +1,8 @@
-﻿using MiniApp1Api.Configuration;
-using MiniApp1Api.Data.Entities;
-using MiniApp1Api.Services.Models;
+﻿using TransferProject.Configuration;
+using TransferProject.Data.Entities;
+using TransferProject.Services.Models;
 
-namespace MiniApp1Api.Services;
+namespace TransferProject.Services;
 
 public interface ITokenService
 {

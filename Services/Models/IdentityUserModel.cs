@@ -1,7 +1,7 @@
-﻿using MiniApp1Api.Data.Entities;
-using MiniApp1Api.Data.Enums;
+﻿using TransferProject.Data.Entities;
+using TransferProject.Data.Enums;
 
-namespace MiniApp1Api.Services.Models;
+namespace TransferProject.Services.Models;
 
 public class IdentityUserModel
 {

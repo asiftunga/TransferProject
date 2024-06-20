@@ -1,4 +1,4 @@
-﻿namespace MiniApp1Api.Data.Enums;
+﻿namespace TransferProject.Data.Enums;
 
 public enum PaymentMethods
 {

@@ -4,8 +4,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using MiniApp1Api.Data;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
+using TransferProject.Data;
 
 #nullable disable
 

@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using MiniApp1Api.Data.Entities;
-using MiniApp1Api.Data.Mappings;
+using TransferProject.Data.Entities;
 
-namespace MiniApp1Api.Data;
+namespace TransferProject.Data;
 
 public class TransferProjectDbContext : IdentityDbContext<UserApp, IdentityRole, string>
 {

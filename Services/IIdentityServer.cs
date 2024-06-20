@@ -1,6 +1,6 @@
-﻿using MiniApp1Api.Services.Models;
+﻿using TransferProject.Services.Models;
 
-namespace MiniApp1Api.Services;
+namespace TransferProject.Services;
 
 public interface IIdentityServer
 {

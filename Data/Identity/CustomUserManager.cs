@@ -1,9 +1,9 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using MiniApp1Api.Data.Entities;
+using TransferProject.Data.Entities;
 
-namespace MiniApp1Api.Data.Identity;
+namespace TransferProject.Data.Identity;
 
 public class CustomUserManager<TUser> : UserManager<TUser> where TUser : IdentityUser
 {

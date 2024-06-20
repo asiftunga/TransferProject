@@ -1,4 +1,4 @@
-﻿namespace MiniApp1Api.V1.Models.Responses;
+﻿namespace TransferProject.V1.Models.Responses;
 
 public class CreateOrderResponse
 {

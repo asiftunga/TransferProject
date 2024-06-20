@@ -1,6 +1,6 @@
-﻿using MiniApp1Api.Data.Enums;
+﻿using TransferProject.Data.Enums;
 
-namespace MiniApp1Api.Data.Entities;
+namespace TransferProject.Data.Entities;
 
 public class TemporaryOrder
 {

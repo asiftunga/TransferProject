@@ -1,8 +1,8 @@
 ﻿using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Mvc;
-using MiniApp1Api.Filters;
 using Microsoft.AspNetCore.Mvc;
+using TransferProject.Filters;
 
 namespace TransferProject.Extensions;
 

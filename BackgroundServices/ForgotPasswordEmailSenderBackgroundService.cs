@@ -1,11 +1,10 @@
 ﻿using System.Collections.Concurrent;
 using Microsoft.Extensions.Options;
 using MimeKit;
-using MiniApp1Api.BackgroundServices.Models;
-using TransferProject.Constants;
+using TransferProject.BackgroundServices.Models;
 using SmtpClient = MailKit.Net.Smtp.SmtpClient;
 
-namespace MiniApp1Api.BackgroundServices;
+namespace TransferProject.BackgroundServices;
 
 public class ForgotPasswordEmailSenderBackgroundService : BackgroundService
 {

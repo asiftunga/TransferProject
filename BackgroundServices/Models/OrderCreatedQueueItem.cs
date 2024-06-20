@@ -1,4 +1,4 @@
-﻿namespace MiniApp1Api.BackgroundServices.Models;
+﻿namespace TransferProject.BackgroundServices.Models;
 
 public class OrderCreatedQueueItem
 {

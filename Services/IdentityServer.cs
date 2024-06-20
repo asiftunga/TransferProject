@@ -1,14 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using MiniApp1Api.Data;
-using MiniApp1Api.Data.Entities;
-using MiniApp1Api.Data.Enums;
-using MiniApp1Api.Filters;
-using MiniApp1Api.Services.Models;
+using TransferProject.Data;
+using TransferProject.Data.Entities;
+using TransferProject.Data.Enums;
 using TransferProject.Extensions;
+using TransferProject.Filters;
+using TransferProject.Services.Models;
 
-namespace MiniApp1Api.Services;
+namespace TransferProject.Services;
 
 public class IdentityServer : IIdentityServer
 {

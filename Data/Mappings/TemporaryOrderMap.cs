@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using MiniApp1Api.Data.Entities;
+using TransferProject.Data.Entities;
 
-namespace MiniApp1Api.Data.Mappings;
+namespace TransferProject.Data.Mappings;
 
 public class TemporaryOrderMap : IEntityTypeConfiguration<TemporaryOrder>
 {

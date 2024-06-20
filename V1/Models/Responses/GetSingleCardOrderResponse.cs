@@ -1,6 +1,6 @@
-﻿using MiniApp1Api.Data.Enums;
+﻿using TransferProject.Data.Enums;
 
-namespace MiniApp1Api.V1.Models.Responses;
+namespace TransferProject.V1.Models.Responses;
 
 public class GetSingleCardOrderResponse
 {

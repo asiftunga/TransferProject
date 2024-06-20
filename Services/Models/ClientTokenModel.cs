@@ -1,4 +1,4 @@
-﻿namespace MiniApp1Api.Services.Models;
+﻿namespace TransferProject.Services.Models;
 
 public class ClientTokenModel
 {

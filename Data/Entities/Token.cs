@@ -1,4 +1,4 @@
-﻿namespace MiniApp1Api.Data.Entities;
+﻿namespace TransferProject.Data.Entities;
 
 public class Token
 {

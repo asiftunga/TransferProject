@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace MiniApp1Api.V1.Models.Requests.Validators;
+namespace TransferProject.V1.Models.Requests.Validators;
 
 public class CreateUserRequestValidator : AbstractValidator<CreateUserRequest>
 {

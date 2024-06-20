@@ -1,4 +1,4 @@
-﻿namespace MiniApp1Api.Configuration;
+﻿namespace TransferProject.Configuration;
 
 public class CustomTokenOption
 {

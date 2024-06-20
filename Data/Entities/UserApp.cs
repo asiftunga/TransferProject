@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
-using MiniApp1Api.Data.Enums;
 
-namespace MiniApp1Api.Data.Entities;
+namespace TransferProject.Data.Entities;
 
 public class UserApp : IdentityUser
 {
