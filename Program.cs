@@ -118,9 +118,10 @@
 
     builder.Services.AddSingleton<ForgotPasswordEmailSenderBackgroundService>();
     builder.Services.AddHostedService(provider => provider.GetRequiredService<ForgotPasswordEmailSenderBackgroundService>());
-
     builder.Services.AddSingleton<SendOrderInfoToAdminsEmailSenderBackgroundService>();
     builder.Services.AddHostedService(provider => provider.GetRequiredService<SendOrderInfoToAdminsEmailSenderBackgroundService>());
+    builder.Services.AddSingleton<SendOrderInfoToUsersEmailSenderBackgroundService>();
+    builder.Services.AddHostedService(provider => provider.GetRequiredService<SendOrderInfoToUsersEmailSenderBackgroundService>());
 
     builder.Services.AddIdentity<UserApp, IdentityRole>(Opt =>
     {
