@@ -22,18 +22,20 @@ public class SingleUseCardV1Controller : ControllerBase
 {
     private readonly UserManager<UserApp> _userManager;
     private readonly SendOrderInfoToAdminsEmailSenderBackgroundService _emailSenderService;
+    private readonly SendOrderInfoToUsersEmailSenderBackgroundService _usersEmailSenderBackgroundService;
     private readonly TransferProjectDbContext _transferProjectDbContext;
     private readonly IIdentityServer _identityServer;
 
     public SingleUseCardV1Controller(
         UserManager<UserApp> userManager,
         SendOrderInfoToAdminsEmailSenderBackgroundService emailSenderService,
-        TransferProjectDbContext transferProjectDbContext, IIdentityServer identityServer)
+        TransferProjectDbContext transferProjectDbContext, IIdentityServer identityServer, SendOrderInfoToUsersEmailSenderBackgroundService usersEmailSenderBackgroundService)
     {
         _userManager = userManager;
         _emailSenderService = emailSenderService;
         _transferProjectDbContext = transferProjectDbContext;
         _identityServer = identityServer;
+        _usersEmailSenderBackgroundService = usersEmailSenderBackgroundService;
     }
 
 //todo bu orderid ye sahip baska bir kayit varsa unauth don her yerde ama ozellikle order kisimlarinda
@@ -111,6 +113,8 @@ public class SingleUseCardV1Controller : ControllerBase
         await _transferProjectDbContext.SaveChangesAsync();
 
         _emailSenderService.QueueEmail(userModel.User.FirstName, userModel.User.Email!, request.OrderId, request.Amount, userModel.User.Id, order.Currency.ToString());
+
+        _usersEmailSenderBackgroundService.QueueEmail(userModel.User.FirstName, userModel.User.Email, request.Amount, order.Currency.ToString(), OrderTypes.SingleUseCard);
 
         CreateOrderResponse response = new()
         {
